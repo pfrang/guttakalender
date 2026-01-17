@@ -2,6 +2,7 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { useState } from "react";
 
 import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
 
 export function SignIn() {
     const { signIn } = useAuthActions();
@@ -9,7 +10,7 @@ export function SignIn() {
     const [error, setError] = useState<string | null>(null);
 
     return (
-        <div className="mx-auto flex w-96 flex-col gap-8">
+        <div className="mx-auto flex w-full flex-col gap-8 lg:w-96">
             <p>Du må logge inn for å se gættakalenderen</p>
             <form
                 className="flex flex-col gap-2"
@@ -33,18 +34,8 @@ export function SignIn() {
           name="email"
           placeholder="Email"
         />*/}
-                <input
-                    className="rounded-md border-2 border-slate-200 bg-light p-2 text-dark dark:border-slate-800 dark:bg-dark dark:text-light"
-                    type="text"
-                    name="name"
-                    placeholder="Brukernavn"
-                />
-                <input
-                    className="rounded-md border-2 border-slate-200 bg-light p-2 text-dark dark:border-slate-800 dark:bg-dark dark:text-light"
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                />
+                <Input type="text" name="name" placeholder="Brukernavn" />
+                <Input type="password" name="password" placeholder="Password" />
                 <Button type="submit">{flow === "signIn" ? "Logg inn " : "Mekk en konto"}</Button>
                 <div className="flex flex-row gap-2">
                     <span>{flow === "signIn" ? "Har du ikke konto?" : "Har du konto?"}</span>
