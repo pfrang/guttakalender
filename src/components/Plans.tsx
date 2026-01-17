@@ -1,5 +1,5 @@
 import { useUser } from "@/hooks/user";
-import { formatDateAndTime } from "@/utils/date";
+import { endOfDay, formatDateAndTime } from "@/utils/date";
 import { useMutation, useQuery } from "convex/react";
 import { Clock, Crown, MapPin, User } from "lucide-react";
 
@@ -19,6 +19,8 @@ export function Plans() {
     const user = useUser();
     const hasPlans = plans && plans.length > 0;
 
+    const plansAfterToday = plans?.filter((plan) => new Date(endOfDay(plan.date)) >= new Date());
+
     function isUserPlan(planUser?: string) {
         return planUser === user?._id;
     }
@@ -32,8 +34,8 @@ export function Plans() {
     }
 
     return (
-        <div className="rounded-lg bg-white p-6 text-black shadow-md">
-            <h2 className="mb-4 text-2xl font-bold">Guttas planer</h2>
+        <div className="rounded-lg border border-zinc-200 bg-white p-4 text-black shadow-sm lg:p-6">
+            <h2 className="mb-4 text-2xl font-bold">Guttas kommende planer</h2>
             <div className="flex justify-end">
                 <AddPlan />
             </div>
@@ -41,33 +43,32 @@ export function Plans() {
                 <p className="mb-4 text-lg font-bold">Ingen planer lagt til enda</p>
             ) : (
                 <ul className="flex flex-col gap-4">
-                    {plans.map((plan) => {
+                    {plans.map((plan, index) => {
                         return (
-                            <div key={plan._id}>
+                            <div key={plan._id + index}>
                                 <Accordion
                                     header={
                                         <div className="flex w-full gap-4">
                                             <div className="flex w-full flex-wrap gap-4">
                                                 <div className="flex items-end gap-2">
-                                                    <Clock />
-                                                    <p className="max-w-25">{formatDateAndTime(plan.date, "no")}</p>
+                                                    <Clock className="shrink-0" />
+                                                    <p>{formatDateAndTime(plan.date, "no", "medium", true)}</p>
                                                 </div>
-                                                <div className="flex items-end gap-2">
-                                                    <MapPin />
-                                                    <p>{plan.location}</p>
+                                                <div className="flex min-w-0 items-end gap-2">
+                                                    <MapPin className="shrink-0" />
+                                                    <p className="">{plan.location}</p>
                                                 </div>
                                             </div>
                                         </div>
                                     }
                                 >
-                                    <div className="flex w-full flex-col gap-2 border-t border-t-stone-300">
-                                        <span className="block h-2" />
-                                        <div className="flex w-full justify-between">
-                                            <p>{plan.plan}</p>
-                                            <div className="flex flex-col items-end gap-2 lg:flex-row">
+                                    <div className="flex w-full flex-col gap-2 border-t border-t-stone-300 py-2">
+                                        <div className="flex w-full flex-col justify-end gap-2">
+                                            <div className="mb-2 flex items-end gap-2">
                                                 <Crown />
-                                                <p>{getUserFromId(plan.userId)?.name}</p>
+                                                <Label>{getUserFromId(plan.userId)?.name}</Label>
                                             </div>
+                                            <p>{plan.plan}</p>
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-2 border-t border-t-stone-300">
@@ -85,7 +86,7 @@ export function Plans() {
                                         </div>
                                         {plan.attendees.map((userId) => {
                                             return (
-                                                <div className="flex items-baseline gap-2">
+                                                <div key={userId} className="flex items-baseline gap-2">
                                                     <User />
                                                     <li> {getUserFromId(userId)?.name}</li>
                                                 </div>

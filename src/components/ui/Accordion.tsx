@@ -17,12 +17,14 @@ export function Accordion({
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex w-full items-center justify-between gap-2 p-4 text-left transition-colors hover:bg-stone-50"
+                className="grid w-full grid-cols-[1fr_auto] items-center gap-2 p-4 text-left transition-colors hover:bg-stone-50"
             >
-                {header}
-                <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+                <div>{header}</div>
+                <ChevronDown
+                    className={`h-5 w-5 shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                />
             </button>
-            {isOpen && <div className="border-t border-stone-200 p-4 pt-0">{children}</div>}
+            {isOpen && <div className="p-4 pt-0">{children}</div>}
         </div>
     );
 }

@@ -20,3 +20,9 @@ export function formatDateAndTime(
         return "";
     }
 }
+
+export function endOfDay(date: string) {
+    const d = new Date(date);
+    d.setHours(23, 59, 59, 999);
+    return d;
+}

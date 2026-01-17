@@ -10,9 +10,9 @@ export function Users() {
     }
 
     return (
-        <div>
+        <div className="flex flex-col gap-2">
             <h2>Brukere</h2>
-            <ul>
+            <ul className="flex gap-2">
                 {users.map((user) => (
                     <li key={user._id}>{user.name}</li>
                 ))}

@@ -6,7 +6,7 @@ import { mutation, query } from "./_generated/server";
 export const getPlans = query({
     args: {},
     handler: async (ctx) => {
-        return await ctx.db.query("plans").collect();
+        return await ctx.db.query("plans").withIndex("by_date").order("asc").collect();
     },
 });
 

@@ -23,7 +23,7 @@ export default defineSchema({
         userId: v.string(),
         plan: v.string(),
         attendees: v.array(v.string()),
-    }),
+    }).index("by_date", ["date"]),
     chat: defineTable({
         message: v.string(),
         userId: v.string(),

@@ -12,6 +12,10 @@ import { Users } from "./components/Users";
 export default function App() {
     return (
         <>
+            <style>
+                @import
+                url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+            </style>
             <header className="sticky top-0 z-10 flex items-center justify-between border-b-2 border-slate-200 bg-light p-4 dark:border-slate-800 dark:bg-dark">
                 Guttakalender
                 <Authenticated>
@@ -21,7 +25,7 @@ export default function App() {
                     </div>
                 </Authenticated>
             </header>
-            <main className="flex flex-col gap-16 p-4 text-sm leading-none lg:p-8 lg:text-base">
+            <main className="flex flex-col p-4 text-sm leading-none lg:p-8 lg:text-base">
                 <Authenticated>
                     <section className="flex flex-col justify-between gap-4 lg:flex-row">
                         <div className="flex w-full flex-col gap-8">

@@ -2,9 +2,10 @@ import { useUser } from "@/hooks/user";
 import "@/styles/datepicker.css";
 import "@/styles/modal.css";
 import { useMutation } from "convex/react";
+import { nb } from "date-fns/locale/nb";
 import { Calendar } from "lucide-react";
 import { forwardRef, useRef, useState } from "react";
-import DatePicker from "react-datepicker";
+import DatePicker, { registerLocale } from "react-datepicker";
 
 import { api } from "../../convex/_generated/api";
 
@@ -13,6 +14,8 @@ import { Input } from "./ui/Input";
 import { Label } from "./ui/Label";
 import { Spinner } from "./ui/Spinner";
 import { Textarea } from "./ui/Textarea";
+
+registerLocale("nb", nb);
 
 // Custom input that matches your Input component style
 const DateInput = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
@@ -53,7 +56,6 @@ export function AddPlan() {
     const [error, setError] = useState<string | null>(null);
     const [date, setDate] = useState<Date | null>(new Date());
     const user = useUser();
-    console.log(isLoading);
 
     const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -111,7 +113,7 @@ export function AddPlan() {
                             void onSubmit(e);
                         }}
                     >
-                        <div className="flex flex-col gap-6">
+                        <div className="flex flex-col gap-4 lg:gap-6">
                             <input type="hidden" name="userId" />
                             <Label>Hvor skjer det?</Label>
                             <Input
@@ -127,15 +129,21 @@ export function AddPlan() {
                             <DatePicker
                                 name="date"
                                 selected={date}
+                                showTimeInput
+                                timeInputLabel="Tid:"
+                                locale="nb"
+                                timeFormat="HH:mm"
                                 onChange={(date: Date | null) => setDate(date)}
                                 customInput={<DateInput name="date" />}
-                                dateFormat={"dd.MM.yyyy"}
+                                dateFormat={"dd.MM.yyyy HH:mm"}
                                 popperPlacement="bottom"
                             />
-                            <div className="flex w-full justify-center">
-                                {error && <p className="text-red-500">{error}</p>}
-                                {isLoading && <Spinner />}
-                            </div>
+                            {(error || isLoading) && (
+                                <div className="flex w-full justify-center">
+                                    {error && <p className="text-red-500">{error}</p>}
+                                    {isLoading && <Spinner />}
+                                </div>
+                            )}
                             <Button disabled={isLoading} type="submit">
                                 Add Plan
                             </Button>
