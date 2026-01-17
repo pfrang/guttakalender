@@ -1,0 +1,17 @@
+package.json
+package-lock.json
+*.yaml
+*.yml
+.sanity
+node_modules
+dist
+.next
+
+.cursor
+.gitignore
+.prettierignore
+.prettierrc.js
+.zed
+package.json
+LICENSE.txt
+convex/_generated*
