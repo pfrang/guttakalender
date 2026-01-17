@@ -2,7 +2,7 @@ import { useUser } from "@/hooks/user";
 import "@/styles/datepicker.css";
 import "@/styles/modal.css";
 import { useMutation } from "convex/react";
-import { Calendar, LoaderCircle } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { forwardRef, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
 

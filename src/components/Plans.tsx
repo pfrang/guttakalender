@@ -121,7 +121,3 @@ export function Plans() {
         </div>
     );
 }
-
-function TableRow({ children }: { children: React.ReactNode }) {
-    return <td className="border border-slate-300 px-4 py-2 wrap-break-word">{children}</td>;
-}
