@@ -19,7 +19,9 @@ export function SignIn() {
                     formData.set("flow", flow);
                     void signIn("password", formData).catch(() => {
                         const errorMsg =
-                            flow === "signIn" ? "Feil brukernavn eller passord" : "Konto kunne ikke opprettes";
+                            flow === "signIn"
+                                ? "Feil brukernavn eller passord eller så eksiterer ikke kontoen"
+                                : "Konto kunne ikke opprettes";
 
                         setError(errorMsg);
                     });
