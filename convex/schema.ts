@@ -27,5 +27,13 @@ export default defineSchema({
     chat: defineTable({
         message: v.string(),
         userId: v.string(),
+        reactions: v.optional(
+            v.array(
+                v.object({
+                    emoji: v.string(),
+                    userId: v.string(),
+                })
+            )
+        ),
     }),
 });

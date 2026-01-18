@@ -6,6 +6,7 @@ import { FormEvent, useEffect, useRef } from "react";
 import { api } from "../../convex/_generated/api";
 
 import { Button } from "./ui/Button";
+import { EmojiReactions } from "./ui/EmojiReactions";
 
 export function Chat() {
     const messages = useQuery(api.chat.getChats);
@@ -34,6 +35,8 @@ export function Chat() {
         return messageUserId === currentUser?._id;
     }
 
+    function onReaction() {}
+
     return (
         <div className="flex h-[80vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
             <div className="border-b border-zinc-200 px-6 py-4">
@@ -59,6 +62,7 @@ export function Chat() {
                                     </p>
                                 )}
                                 <div
+                                    onClick={onReaction}
                                     className={cn(
                                         "max-w-[80%] rounded-2xl bg-white px-4 py-3 text-sm text-zinc-800 shadow-sm ring-1 ring-zinc-200",
                                         {
@@ -66,6 +70,7 @@ export function Chat() {
                                         }
                                     )}
                                 >
+                                    <EmojiReactions chatId={msg._id} />
                                     <p className="leading-relaxed">{msg.message}</p>
                                     <p
                                         className={cn("mt-1 text-xs text-zinc-400", {
