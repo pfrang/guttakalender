@@ -1,10 +1,18 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+} from "react-native";
 
 type ButtonProps = {
   title: string;
   onPress?: () => void;
   disabled?: boolean;
   variant?: "primary" | "secondary";
+  style?: StyleProp<ViewStyle>;
 };
 
 export function Button({
@@ -12,11 +20,12 @@ export function Button({
   onPress,
   disabled = false,
   variant = "primary",
+  style,
 }: ButtonProps) {
   const isPrimary = variant === "primary";
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, style]}>
       <Pressable
         accessibilityRole="button"
         disabled={disabled}
@@ -46,8 +55,8 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   button: {
-    paddingVertical: 14,
-    paddingHorizontal: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderRadius: 14,
     borderWidth: 1,
     shadowColor: "#111111",

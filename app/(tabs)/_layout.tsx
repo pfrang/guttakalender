@@ -1,5 +1,6 @@
+import { CalendarIcon } from "@/lib/icons/Calendar";
+import { ChatBubbleIcon } from "@/lib/icons/ChatBubble";
 import { SettingsIcon } from "@/lib/icons/Settings";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { Tabs } from "expo-router";
 
 export default function TabLayout() {
@@ -21,20 +22,21 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "home-sharp" : "home-outline"}
-              color={color}
-              size={24}
-            />
-          ),
+          title: "Guttachat",
+          tabBarIcon: ({ color, focused }) => <ChatBubbleIcon color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="plans"
+        options={{
+          title: "Planer",
+          tabBarIcon: ({ color, focused }) => <CalendarIcon color={color} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Settings",
+          title: "Instillinger",
           tabBarIcon: ({ color, focused }) => <SettingsIcon color={color} />,
         }}
       />

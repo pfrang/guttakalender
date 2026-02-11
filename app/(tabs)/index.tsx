@@ -1,38 +1,265 @@
-import { Text } from "@/lib/components/Text";
-import { Authenticated } from "convex/react";
-import { StyleSheet, View } from "react-native";
-import TopSection from "../components/topSection";
+import { api } from "@/convex/_generated/api";
+import { Button } from "@/lib/components/Button";
+import { formatDateAndTime } from "@/lib/utils/date";
+import { useMutation, useQuery } from "convex/react";
+import { useEffect, useRef, useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 export default function Index() {
+  const messages = useQuery(api.chat.getChats);
+  const users = useQuery(api.users.getUsers);
+  const currentUser = useQuery(api.users.getCurrentUser);
+  const sendMessage = useMutation(api.chat.addChat);
+
+  const [message, setMessage] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const chatContainerRef = useRef<ScrollView>(null);
+
+  const scrollToBottom = (animated: boolean) => {
+    requestAnimationFrame(() => {
+      chatContainerRef.current?.scrollToEnd({ animated });
+    });
+  };
+
+  useEffect(() => {
+    if (messages && messages.length > 0) {
+      scrollToBottom(false);
+    }
+  }, [messages?.length]);
+
+  const handleSend = async () => {
+    const trimmed = message.trim();
+    if (!trimmed) {
+      return;
+    }
+    setError(null);
+    setIsSending(true);
+    try {
+      await sendMessage({ message: trimmed });
+      setMessage("");
+    } catch (sendError) {
+      setError(
+        sendError instanceof Error
+          ? sendError.message
+          : "Kunne ikke sende melding.",
+      );
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  function isChatFromUser(messageUserId: string) {
+    return messageUserId === currentUser?._id;
+  }
+
+  function getUserFromId(userId?: string) {
+    return users?.find((user) => user._id === userId);
+  }
+
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <View style={styles.header}>
-        <Authenticated>
-          <TopSection />
-        </Authenticated>
+        <Text style={styles.headerTitle}>Gaettachat</Text>
       </View>
-      <View style={styles.main}>
-        <Text>Logget inn</Text>
+
+      <ScrollView
+        ref={chatContainerRef}
+        style={styles.chatContainer}
+        contentContainerStyle={styles.chatContent}
+        onLayout={() => scrollToBottom(false)}
+        onContentSizeChange={() => scrollToBottom(false)}
+      >
+        {messages === undefined ||
+        users === undefined ||
+        currentUser === undefined ? (
+          <Text style={styles.infoText}>Laster meldinger...</Text>
+        ) : messages.length === 0 ? (
+          <Text style={styles.infoText}>
+            Ingen meldinger enda. Vaer den forste!
+          </Text>
+        ) : (
+          messages.map((msg) => {
+            const user = getUserFromId(msg.userId);
+            const isCurrentUser = isChatFromUser(msg.userId);
+
+            return (
+              <View
+                key={msg._id}
+                style={[
+                  styles.messageRow,
+                  isCurrentUser
+                    ? styles.messageRowRight
+                    : styles.messageRowLeft,
+                ]}
+              >
+                <View
+                  style={[
+                    styles.bubble,
+                    isCurrentUser
+                      ? styles.currentUserBubble
+                      : styles.otherUserBubble,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.messageText,
+                      isCurrentUser && styles.currentUserMessageText,
+                    ]}
+                  >
+                    {msg.message}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.messageMeta,
+                      isCurrentUser && styles.currentUserMessageMeta,
+                    ]}
+                  >
+                    {user?.name ?? "Ukjent"} -{" "}
+                    {formatDateAndTime(
+                      new Date(msg._creationTime),
+                      "no",
+                      "short",
+                      true,
+                    )}
+                  </Text>
+                </View>
+              </View>
+            );
+          })
+        )}
+      </ScrollView>
+
+      <View style={styles.form}>
+        <TextInput
+          value={message}
+          onChangeText={setMessage}
+          placeholder="Send en melding til boaza..."
+          editable={!isSending}
+          style={styles.input}
+          onSubmitEditing={() => void handleSend()}
+        />
+        <Button
+          title={isSending ? "Sender..." : "Send"}
+          onPress={() => void handleSend()}
+          disabled={isSending || message.trim().length === 0}
+        />
       </View>
-    </View>
+
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    display: "flex",
-    flexDirection: "column",
+    flex: 1,
     backgroundColor: "#ffffff",
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
-  main: {
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  chatContainer: {
     flex: 1,
-    justifyContent: "center",
+    backgroundColor: "#F9FAFB",
+  },
+  chatContent: {
+    padding: 12,
+    gap: 8,
+  },
+  infoText: {
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
+    marginTop: 24,
+  },
+  messageRow: {
+    width: "100%",
+    flexDirection: "row",
+  },
+  messageRowLeft: {
+    justifyContent: "flex-start",
+  },
+  messageRowRight: {
+    justifyContent: "flex-end",
+  },
+  bubble: {
+    maxWidth: "82%",
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderWidth: 1,
+  },
+  otherUserBubble: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#E5E7EB",
+  },
+  currentUserBubble: {
+    backgroundColor: "#111827",
+    borderColor: "#111827",
+  },
+  messageText: {
+    color: "#1F2937",
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  currentUserMessageText: {
+    color: "#FFFFFF",
+  },
+  messageMeta: {
+    marginTop: 6,
+    fontSize: 11,
+    color: "#6B7280",
+  },
+  currentUserMessageMeta: {
+    color: "#D1D5DB",
+  },
+  form: {
+    borderTopWidth: 1,
+    borderTopColor: "#E5E7EB",
+    backgroundColor: "#FFFFFF",
+    padding: 12,
+    flexDirection: "row",
     alignItems: "center",
+    gap: 8,
+  },
+  input: {
+    flex: 1,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: "#111827",
+  },
+  errorText: {
+    color: "#B91C1C",
+    backgroundColor: "#FEE2E2",
+    borderTopWidth: 1,
+    borderTopColor: "#FCA5A5",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 12,
   },
 });

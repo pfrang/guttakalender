@@ -6,7 +6,7 @@ import {
   ConvexReactClient,
   Unauthenticated,
 } from "convex/react";
-import { Slot } from "expo-router";
+import { Stack } from "expo-router";
 import { View } from "react-native";
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!);
@@ -34,7 +34,18 @@ export default function RootLayout() {
           </View>
         </Unauthenticated>
         <Authenticated>
-          <Slot />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen
+              name="modal"
+              options={{
+                presentation: "modal",
+                contentStyle: { backgroundColor: "#ffffff" },
+                headerShown: true,
+                title: "Planer",
+              }}
+            />
+          </Stack>
         </Authenticated>
       </View>
     </ConvexAuthProvider>
