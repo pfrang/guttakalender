@@ -4,9 +4,17 @@ type ButtonProps = {
   title: string;
   onPress?: () => void;
   disabled?: boolean;
+  variant?: "primary" | "secondary";
 };
 
-export function Button({ title, onPress, disabled = false }: ButtonProps) {
+export function Button({
+  title,
+  onPress,
+  disabled = false,
+  variant = "primary",
+}: ButtonProps) {
+  const isPrimary = variant === "primary";
+
   return (
     <View style={styles.wrapper}>
       <Pressable
@@ -15,11 +23,19 @@ export function Button({ title, onPress, disabled = false }: ButtonProps) {
         onPress={onPress}
         style={({ pressed }) => [
           styles.button,
+          isPrimary ? styles.buttonPrimary : styles.buttonSecondary,
           disabled && styles.buttonDisabled,
           pressed && styles.buttonPressed,
         ]}
       >
-        <Text style={styles.label}>{title}</Text>
+        <Text
+          style={[
+            styles.label,
+            isPrimary ? styles.labelPrimary : styles.labelSecondary,
+          ]}
+        >
+          {title}
+        </Text>
       </Pressable>
     </View>
   );
@@ -27,22 +43,26 @@ export function Button({ title, onPress, disabled = false }: ButtonProps) {
 
 const styles = StyleSheet.create({
   wrapper: {
-    width: "100%",
-    alignItems: "center",
+    alignItems: "flex-start",
   },
   button: {
-    width: "auto",
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 14,
-    backgroundColor: "#4F46E5",
     borderWidth: 1,
-    borderColor: "#4338CA",
-    shadowColor: "#312E81",
+    shadowColor: "#111111",
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.16,
     shadowRadius: 12,
     elevation: 5,
+  },
+  buttonPrimary: {
+    backgroundColor: "#111111",
+    borderColor: "#111111",
+  },
+  buttonSecondary: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#111111",
   },
   buttonPressed: {
     transform: [{ scale: 0.98 }],
@@ -52,10 +72,15 @@ const styles = StyleSheet.create({
     opacity: 0.55,
   },
   label: {
-    color: "#FFFFFF",
     fontWeight: "700",
     fontSize: 16,
     textAlign: "center",
     letterSpacing: 0.3,
+  },
+  labelPrimary: {
+    color: "#FFFFFF",
+  },
+  labelSecondary: {
+    color: "#111111",
   },
 });
