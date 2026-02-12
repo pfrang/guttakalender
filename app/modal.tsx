@@ -135,6 +135,5 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: "row",
     gap: 10,
-    justifyContent: "flex-end",
   },
 });
