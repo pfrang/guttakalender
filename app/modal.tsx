@@ -9,7 +9,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function Modal() {
   const user = useQuery(api.users.getCurrentUser);
-  const addPlan = useMutation((api as any).plans.addPlan);
+  const addPlan = useMutation(api.plans.addPlan);
 
   const [location, setLocation] = useState("");
   const [plan, setPlan] = useState("");

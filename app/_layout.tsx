@@ -74,10 +74,10 @@ export default function RootLayout() {
               <Stack.Screen
                 name="modal"
                 options={{
-                  presentation: "modal",
+                  presentation: "card",
+                  // animation: "slide_from_bottom",
+                  headerBackVisible: false,
                   contentStyle: { backgroundColor: "#ffffff" },
-                  headerShown: true,
-                  title: "Planer",
                 }}
               />
             </Stack>
