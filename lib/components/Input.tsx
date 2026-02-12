@@ -1,24 +1,32 @@
 import { useState } from "react";
 import {
+  type StyleProp,
   StyleSheet,
   Text,
   TextInput,
   TextInputProps,
   View,
+  type ViewStyle,
 } from "react-native";
 
 type InputProps = TextInputProps & {
-  label?: string;
   error?: string;
+  containerStyle?: StyleProp<ViewStyle>;
+  label?: string;
 };
 
-export function Input({ label, error, style, ...props }: InputProps) {
+export function Input({
+  error,
+  style,
+  containerStyle,
+  label,
+  ...props
+}: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, containerStyle]}>
       {label ? <Text style={styles.label}>{label}</Text> : null}
-
       <TextInput
         {...props}
         placeholderTextColor="#9CA3AF"
@@ -46,16 +54,10 @@ export function Input({ label, error, style, ...props }: InputProps) {
 
 const styles = StyleSheet.create({
   wrapper: {
-    width: "100%",
+    flexShrink: 1,
     gap: 8,
   },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#1F2937",
-  },
   input: {
-    width: "100%",
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#D1D5DB",
@@ -75,6 +77,11 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: "#EF4444",
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#1F2937",
   },
   errorText: {
     color: "#DC2626",

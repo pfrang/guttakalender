@@ -2,6 +2,7 @@ import { api } from "@/convex/_generated/api";
 import { Button } from "@/lib/components/Button";
 import { Input } from "@/lib/components/Input";
 import { formatDateAndTime } from "@/lib/utils/date";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { useMutation, useQuery } from "convex/react";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -14,6 +15,7 @@ import {
 } from "react-native";
 
 export default function Index() {
+  const headerHeight = useHeaderHeight();
   const messages = useQuery(api.chat.getChats);
   const users = useQuery(api.users.getUsers);
   const currentUser = useQuery(api.users.getCurrentUser);
@@ -34,7 +36,7 @@ export default function Index() {
     if (messages && messages.length > 0) {
       scrollToBottom(false);
     }
-  }, [messages?.length]);
+  }, [messages]);
 
   const handleSend = async () => {
     const trimmed = message.trim();
@@ -68,12 +70,15 @@ export default function Index() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? headerHeight + 60 : 0}
     >
       <ScrollView
         ref={chatContainerRef}
         style={styles.chatContainer}
         contentContainerStyle={styles.chatContent}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
         onLayout={() => scrollToBottom(false)}
         onContentSizeChange={() => scrollToBottom(false)}
       >
@@ -137,13 +142,17 @@ export default function Index() {
         )}
       </ScrollView>
 
-      <View style={styles.form}>
+      <View style={[styles.form]}>
         <Input
+          containerStyle={styles.inputContainer}
           value={message}
           onChangeText={setMessage}
           placeholder="Send en melding til boaza..."
           editable={!isSending}
           style={styles.input}
+          returnKeyType="send"
+          blurOnSubmit={false}
+          onFocus={() => scrollToBottom(true)}
           onSubmitEditing={() => void handleSend()}
         />
         <Button
@@ -239,7 +248,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   input: {
-    flex: 1,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#D1D5DB",
@@ -248,6 +256,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 14,
     color: "#111827",
+  },
+  inputContainer: {
+    flex: 1,
+    minWidth: 0,
   },
   errorText: {
     color: "#B91C1C",

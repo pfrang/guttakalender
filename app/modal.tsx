@@ -44,7 +44,7 @@ export default function Modal() {
       setLocation("");
       setPlan("");
       setDate(new Date());
-      router.replace("/plans");
+      router.back();
     } catch (submitError) {
       setError(
         submitError instanceof Error
@@ -96,7 +96,7 @@ export default function Modal() {
         <Button
           title="Avbryt"
           variant="secondary"
-          onPress={() => router.replace("/plans")}
+          onPress={() => router.back()}
           disabled={isSubmitting}
         />
       </View>

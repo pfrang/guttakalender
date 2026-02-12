@@ -56,7 +56,6 @@ export default function RootLayout() {
               screenOptions={{
                 headerShown: true,
                 title: "Guttakalender",
-                headerTitleAlign: "left",
                 headerStyle: {
                   backgroundColor: "#25292e",
                 },
@@ -66,7 +65,12 @@ export default function RootLayout() {
                 headerTintColor: "#fff",
               }}
             >
-              <Stack.Screen name="(tabs)" />
+              <Stack.Screen
+                name="(tabs)"
+                options={{
+                  headerBackVisible: false,
+                }}
+              />
               <Stack.Screen
                 name="modal"
                 options={{
