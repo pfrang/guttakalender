@@ -1,5 +1,6 @@
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/lib/components/Button";
+import { Input } from "@/lib/components/Input";
 import { formatDateAndTime } from "@/lib/utils/date";
 import { useMutation, useQuery } from "convex/react";
 import { useEffect, useRef, useState } from "react";
@@ -9,7 +10,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 
@@ -70,10 +70,6 @@ export default function Index() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Gaettachat</Text>
-      </View>
-
       <ScrollView
         ref={chatContainerRef}
         style={styles.chatContainer}
@@ -142,7 +138,7 @@ export default function Index() {
       </ScrollView>
 
       <View style={styles.form}>
-        <TextInput
+        <Input
           value={message}
           onChangeText={setMessage}
           placeholder="Send en melding til boaza..."
