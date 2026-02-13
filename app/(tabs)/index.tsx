@@ -4,6 +4,7 @@ import { Input } from "@/lib/components/Input";
 import { formatDateAndTime } from "@/lib/utils/date";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useMutation, useQuery } from "convex/react";
+import Constants from "expo-constants";
 import { useEffect, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -20,6 +21,7 @@ export default function Index() {
   const users = useQuery(api.users.getUsers);
   const currentUser = useQuery(api.users.getCurrentUser);
   const sendMessage = useMutation(api.chat.addChat);
+  const savePushToken = useMutation(api.users.savePushToken);
 
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -37,6 +39,62 @@ export default function Index() {
       scrollToBottom(false);
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (Platform.OS !== "ios" && Platform.OS !== "android") {
+      return;
+    }
+    if (!currentUser?._id) {
+      return;
+    }
+
+    const registerForPush = async () => {
+      try {
+        const Notifications = await import("expo-notifications");
+
+        if (Platform.OS === "android") {
+          await Notifications.setNotificationChannelAsync("default", {
+            name: "default",
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 250, 250],
+            lightColor: "#FFD33D",
+          });
+        }
+
+        const { status: existingStatus } =
+          await Notifications.getPermissionsAsync();
+        let finalStatus = existingStatus;
+
+        if (existingStatus !== "granted") {
+          const permission = await Notifications.requestPermissionsAsync();
+          finalStatus = permission.status;
+        }
+
+        if (finalStatus !== "granted") {
+          return;
+        }
+
+        const projectId =
+          Constants.expoConfig?.extra?.eas?.projectId ??
+          Constants.easConfig?.projectId;
+        if (!projectId) {
+          return;
+        }
+
+        const tokenResult = await Notifications.getExpoPushTokenAsync({
+          projectId,
+        });
+        await savePushToken({
+          token: tokenResult.data,
+          platform: Platform.OS as "ios" | "android",
+        });
+      } catch {
+        // Token registration can fail on unsupported devices/simulators.
+      }
+    };
+
+    void registerForPush();
+  }, [currentUser?._id, savePushToken]);
 
   const handleSend = async () => {
     const trimmed = message.trim();

@@ -66,7 +66,9 @@ export function SignInForm() {
                 : "Mekk en konto"
           }
           onPress={handleSubmit}
-          disabled={isSubmitting || name.trim().length === 0 || password.length === 0}
+          disabled={
+            isSubmitting || name.trim().length === 0 || password.length === 0
+          }
         />
 
         <View style={styles.switchRow}>
@@ -95,6 +97,7 @@ export const SignIn = SignInForm;
 const styles = StyleSheet.create({
   container: {
     width: "100%",
+    paddingHorizontal: 8,
     maxWidth: 420,
     alignSelf: "center",
     gap: 20,

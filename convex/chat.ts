@@ -1,6 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
+import { internal } from "./_generated/api";
 import { mutation, query } from "./_generated/server";
 
 export const getChats = query({
@@ -23,6 +24,15 @@ export const addChat = mutation({
     await ctx.db.insert("chat", {
       message: args.message,
       userId: userId,
+    });
+
+    const sender = await ctx.db.get(userId);
+    const senderName = sender?.name?.trim() || "Ukjent";
+
+    await ctx.scheduler.runAfter(0, internal.push.sendChatNotifications, {
+      senderUserId: userId,
+      senderName,
+      message: args.message,
     });
   },
 });

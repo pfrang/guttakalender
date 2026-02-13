@@ -54,10 +54,13 @@ export function Input({
 
 const styles = StyleSheet.create({
   wrapper: {
-    flexShrink: 1,
+    width: "100%",
+    maxWidth: 560,
+    alignSelf: "center",
     gap: 8,
   },
   input: {
+    width: "100%",
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#D1D5DB",

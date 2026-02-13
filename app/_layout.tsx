@@ -7,6 +7,7 @@ import {
 } from "convex/react";
 import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
+import { useEffect } from "react";
 import { Platform, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
@@ -36,6 +37,26 @@ const nativeStorage: TokenStorage = {
 const tokenStorage = Platform.OS === "web" ? webStorage : nativeStorage;
 
 export default function RootLayout() {
+  useEffect(() => {
+    if (Platform.OS !== "ios" && Platform.OS !== "android") {
+      return;
+    }
+
+    const configureNotifications = async () => {
+      const Notifications = await import("expo-notifications");
+      Notifications.setNotificationHandler({
+        handleNotification: async () => ({
+          shouldShowBanner: true,
+          shouldShowList: true,
+          shouldPlaySound: true,
+          shouldSetBadge: false,
+        }),
+      });
+    };
+
+    void configureNotifications();
+  }, []);
+
   return (
     <ConvexAuthProvider client={convex} storage={tokenStorage}>
       <SafeAreaProvider>

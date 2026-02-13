@@ -6,34 +6,42 @@ import { v } from "convex/values";
 // requires indexes defined on `authTables`.
 // The schema provides more precise TypeScript types.
 export default defineSchema({
-    ...authTables,
-    users: defineTable({
-        name: v.optional(v.string()),
-        image: v.optional(v.string()),
-        email: v.optional(v.string()),
-        emailVerificationTime: v.optional(v.number()),
-        phone: v.optional(v.string()),
-        phoneVerificationTime: v.optional(v.number()),
-        isAnonymous: v.optional(v.boolean()),
-        // other "users" fields...
-    }).index("name", ["name"]),
-    plans: defineTable({
-        location: v.string(),
-        date: v.string(),
-        userId: v.string(),
-        plan: v.string(),
-        attendees: v.array(v.string()),
-    }).index("by_date", ["date"]),
-    chat: defineTable({
-        message: v.string(),
-        userId: v.string(),
-        reactions: v.optional(
-            v.array(
-                v.object({
-                    emoji: v.string(),
-                    userId: v.string(),
-                })
-            )
-        ),
-    }),
+  ...authTables,
+  users: defineTable({
+    name: v.optional(v.string()),
+    image: v.optional(v.string()),
+    email: v.optional(v.string()),
+    emailVerificationTime: v.optional(v.number()),
+    phone: v.optional(v.string()),
+    phoneVerificationTime: v.optional(v.number()),
+    isAnonymous: v.optional(v.boolean()),
+    // other "users" fields...
+  }).index("name", ["name"]),
+  plans: defineTable({
+    location: v.string(),
+    date: v.string(),
+    userId: v.string(),
+    plan: v.string(),
+    attendees: v.array(v.string()),
+  }).index("by_date", ["date"]),
+  chat: defineTable({
+    message: v.string(),
+    userId: v.string(),
+    reactions: v.optional(
+      v.array(
+        v.object({
+          emoji: v.string(),
+          userId: v.string(),
+        }),
+      ),
+    ),
+  }),
+  pushTokens: defineTable({
+    userId: v.string(),
+    token: v.string(),
+    platform: v.union(v.literal("ios"), v.literal("android")),
+    updatedAt: v.number(),
+  })
+    .index("by_token", ["token"])
+    .index("by_userId", ["userId"]),
 });
