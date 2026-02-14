@@ -55,7 +55,6 @@ export function Input({
 const styles = StyleSheet.create({
   wrapper: {
     width: "100%",
-    maxWidth: 560,
     alignSelf: "center",
     gap: 8,
   },

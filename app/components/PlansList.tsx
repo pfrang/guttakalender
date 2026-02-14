@@ -160,6 +160,8 @@ export function PlansList({ plans }: Props) {
   );
 }
 
+export default PlansList;
+
 const styles = StyleSheet.create({
   list: {
     gap: 12,

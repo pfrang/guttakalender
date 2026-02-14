@@ -137,8 +137,6 @@ export default function Index() {
         contentContainerStyle={styles.chatContent}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
-        onLayout={() => scrollToBottom(false)}
-        onContentSizeChange={() => scrollToBottom(false)}
       >
         {messages === undefined ||
         users === undefined ||
@@ -210,7 +208,6 @@ export default function Index() {
           style={styles.input}
           returnKeyType="send"
           blurOnSubmit={false}
-          onFocus={() => scrollToBottom(true)}
           onSubmitEditing={() => void handleSend()}
         />
         <Button

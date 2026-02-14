@@ -8,7 +8,7 @@ import {
 import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useEffect } from "react";
-import { Platform, View } from "react-native";
+import { KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!);
@@ -62,15 +62,21 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
           <Unauthenticated>
-            <View
+            <KeyboardAvoidingView
               style={{
                 flex: 1,
                 justifyContent: "center",
                 alignItems: "center",
+                padding: 20,
+                backgroundColor: "#ffffff",
+                borderRadius: 10,
+                borderWidth: 1,
+                borderColor: "#e0e0e0",
               }}
+              behavior="padding"
             >
               <SignInForm />
-            </View>
+            </KeyboardAvoidingView>
           </Unauthenticated>
           <Authenticated>
             <Stack
