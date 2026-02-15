@@ -1,0 +1,6 @@
+
+npx snapai config (for å sjekke om openai er satt)
+
+//Generere ikon
+
+npx snapai icon --prompt "2 straw men buddies holding around each other toasting with beers" -b transparent -style minimalism
