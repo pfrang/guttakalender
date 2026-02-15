@@ -2,21 +2,24 @@ import { api } from "@/convex/_generated/api";
 import { Button } from "@/lib/components/Button";
 import { Input } from "@/lib/components/Input";
 import { formatDateAndTime } from "@/lib/utils/date";
-import { useHeaderHeight } from "@react-navigation/elements";
+import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import Constants from "expo-constants";
 import { useEffect, useRef, useState } from "react";
 import {
+  Animated,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Index() {
-  const headerHeight = useHeaderHeight();
+  const insets = useSafeAreaInsets();
   const messages = useQuery(api.chat.getChats);
   const users = useQuery(api.users.getUsers);
   const currentUser = useQuery(api.users.getCurrentUser);
@@ -26,7 +29,10 @@ export default function Index() {
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const chatContainerRef = useRef<ScrollView>(null);
+  const bounceAnim = useRef(new Animated.Value(0)).current;
+  const isAtBottomRef = useRef(true);
 
   const scrollToBottom = (animated: boolean) => {
     requestAnimationFrame(() => {
@@ -39,6 +45,34 @@ export default function Index() {
       scrollToBottom(false);
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (!showScrollToBottom) {
+      bounceAnim.stopAnimation();
+      bounceAnim.setValue(0);
+      return;
+    }
+
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(bounceAnim, {
+          toValue: 1,
+          duration: 450,
+          useNativeDriver: true,
+        }),
+        Animated.timing(bounceAnim, {
+          toValue: 0,
+          duration: 450,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    animation.start();
+
+    return () => {
+      animation.stop();
+    };
+  }, [bounceAnim, showScrollToBottom]);
 
   useEffect(() => {
     if (Platform.OS !== "ios" && Platform.OS !== "android") {
@@ -125,99 +159,155 @@ export default function Index() {
     return users?.find((user) => user._id === userId);
   }
 
+  function handleChatScroll(event: {
+    nativeEvent: {
+      contentOffset: { y: number };
+      contentSize: { height: number };
+      layoutMeasurement: { height: number };
+    };
+  }) {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const distanceFromBottom =
+      contentSize.height - (contentOffset.y + layoutMeasurement.height);
+    const isAtBottom = distanceFromBottom <= 36;
+
+    if (isAtBottom !== isAtBottomRef.current) {
+      isAtBottomRef.current = isAtBottom;
+      setShowScrollToBottom(!isAtBottom);
+    }
+  }
+
+  const nativeTabBarHeight = Platform.select({
+    ios: 49,
+    android: 56,
+    default: 0,
+  });
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? headerHeight + 60 : 0}
+      behavior={"padding"}
+      keyboardVerticalOffset={40}
+      enabled
     >
-      <ScrollView
-        ref={chatContainerRef}
-        style={styles.chatContainer}
-        contentContainerStyle={styles.chatContent}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
-      >
-        {messages === undefined ||
-        users === undefined ||
-        currentUser === undefined ? (
-          <Text style={styles.infoText}>Laster meldinger...</Text>
-        ) : messages.length === 0 ? (
-          <Text style={styles.infoText}>
-            Ingen meldinger enda. Vaer den forste!
-          </Text>
-        ) : (
-          messages.map((msg) => {
-            const user = getUserFromId(msg.userId);
-            const isCurrentUser = isChatFromUser(msg.userId);
+      <View style={styles.chatArea}>
+        <ScrollView
+          ref={chatContainerRef}
+          style={styles.chatContainer}
+          contentContainerStyle={styles.chatContent}
+          onScroll={handleChatScroll}
+          scrollEventThrottle={16}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode={
+            Platform.OS === "ios" ? "interactive" : "on-drag"
+          }
+        >
+          {messages === undefined ||
+          users === undefined ||
+          currentUser === undefined ? (
+            <Text style={styles.infoText}>Laster meldinger...</Text>
+          ) : messages.length === 0 ? (
+            <Text style={styles.infoText}>
+              Ingen meldinger enda. Vaer den forste!
+            </Text>
+          ) : (
+            messages.map((msg) => {
+              const user = getUserFromId(msg.userId);
+              const isCurrentUser = isChatFromUser(msg.userId);
 
-            return (
-              <View
-                key={msg._id}
-                style={[
-                  styles.messageRow,
-                  isCurrentUser
-                    ? styles.messageRowRight
-                    : styles.messageRowLeft,
-                ]}
-              >
+              return (
                 <View
+                  key={msg._id}
                   style={[
-                    styles.bubble,
+                    styles.messageRow,
                     isCurrentUser
-                      ? styles.currentUserBubble
-                      : styles.otherUserBubble,
+                      ? styles.messageRowRight
+                      : styles.messageRowLeft,
                   ]}
                 >
-                  <Text
+                  <View
                     style={[
-                      styles.messageText,
-                      isCurrentUser && styles.currentUserMessageText,
+                      styles.bubble,
+                      isCurrentUser
+                        ? styles.currentUserBubble
+                        : styles.otherUserBubble,
                     ]}
                   >
-                    {msg.message}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.messageMeta,
-                      isCurrentUser && styles.currentUserMessageMeta,
-                    ]}
-                  >
-                    {user?.name ?? "Ukjent"} -{" "}
-                    {formatDateAndTime(
-                      new Date(msg._creationTime),
-                      "no",
-                      "short",
-                      true,
-                    )}
-                  </Text>
+                    <Text
+                      style={[
+                        styles.messageText,
+                        isCurrentUser && styles.currentUserMessageText,
+                      ]}
+                    >
+                      {msg.message}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.messageMeta,
+                        isCurrentUser && styles.currentUserMessageMeta,
+                      ]}
+                    >
+                      {user?.name ?? "Ukjent"} -{" "}
+                      {formatDateAndTime(
+                        new Date(msg._creationTime),
+                        "no",
+                        "short",
+                        true,
+                      )}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            );
-          })
-        )}
-      </ScrollView>
-
-      <View style={[styles.form]}>
-        <Input
-          containerStyle={styles.inputContainer}
-          value={message}
-          onChangeText={setMessage}
-          placeholder="Send en melding til boaza..."
-          editable={!isSending}
-          style={styles.input}
-          returnKeyType="send"
-          blurOnSubmit={false}
-          onSubmitEditing={() => void handleSend()}
-        />
-        <Button
-          title={isSending ? "Sender..." : "Send"}
-          onPress={() => void handleSend()}
-          disabled={isSending || message.trim().length === 0}
-        />
+              );
+            })
+          )}
+        </ScrollView>
+        {showScrollToBottom ? (
+          <Animated.View
+            style={[
+              styles.scrollToBottomWrapper,
+              {
+                transform: [
+                  {
+                    translateY: bounceAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, 6],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            <Pressable
+              onPress={() => scrollToBottom(true)}
+              style={styles.scrollToBottomButton}
+            >
+              <Ionicons name="chevron-down" size={22} color="#111827" />
+            </Pressable>
+          </Animated.View>
+        ) : null}
       </View>
+      <View style={[{ paddingBottom: insets.bottom + nativeTabBarHeight + 2 }]}>
+        <View style={styles.form}>
+          <Input
+            containerStyle={styles.inputContainer}
+            value={message}
+            onChangeText={setMessage}
+            placeholder="Send en melding til boaza..."
+            editable={!isSending}
+            style={styles.input}
+            returnKeyType="send"
+            blurOnSubmit={false}
+            onSubmitEditing={() => void handleSend()}
+          />
+          <Button
+            title={isSending ? "Sender..." : "Send"}
+            onPress={() => void handleSend()}
+            disabled={isSending || message.trim().length === 0}
+          />
+        </View>
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      </View>
     </KeyboardAvoidingView>
   );
 }
@@ -242,8 +332,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F9FAFB",
   },
+  chatArea: {
+    flex: 1,
+    position: "relative",
+  },
   chatContent: {
     padding: 12,
+    flexGrow: 1,
     gap: 8,
   },
   infoText: {
@@ -293,10 +388,12 @@ const styles = StyleSheet.create({
   currentUserMessageMeta: {
     color: "#D1D5DB",
   },
+  composerContainer: {
+    backgroundColor: "#FFFFFF",
+  },
   form: {
     borderTopWidth: 1,
     borderTopColor: "#E5E7EB",
-    backgroundColor: "#FFFFFF",
     padding: 12,
     flexDirection: "row",
     alignItems: "center",
@@ -324,5 +421,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 12,
+  },
+  scrollToBottomWrapper: {
+    position: "absolute",
+    width: "100%",
+    alignItems: "center",
+    bottom: 16,
+  },
+  scrollToBottomButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 21,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
   },
 });

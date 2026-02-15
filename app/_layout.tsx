@@ -1,5 +1,6 @@
 import { SignInForm } from "@/lib/components/SignInForm";
 import { ConvexAuthProvider, type TokenStorage } from "@convex-dev/auth/react";
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import {
   Authenticated,
   ConvexReactClient,
@@ -9,7 +10,7 @@ import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useEffect } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!);
 
@@ -36,6 +37,22 @@ const nativeStorage: TokenStorage = {
 
 const tokenStorage = Platform.OS === "web" ? webStorage : nativeStorage;
 
+function getTabsTitle(
+  route: Parameters<typeof getFocusedRouteNameFromRoute>[0],
+) {
+  const focusedRoute = getFocusedRouteNameFromRoute(route) ?? "index";
+
+  switch (focusedRoute) {
+    case "plans":
+      return "Planer";
+    case "settings":
+      return "Instillinger";
+    case "index":
+    default:
+      return "Guttachat";
+  }
+}
+
 export default function RootLayout() {
   useEffect(() => {
     if (Platform.OS !== "ios" && Platform.OS !== "android") {
@@ -59,58 +76,50 @@ export default function RootLayout() {
 
   return (
     <ConvexAuthProvider client={convex} storage={tokenStorage}>
-      <SafeAreaProvider>
+      <Unauthenticated>
+        <KeyboardAvoidingView
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 20,
+            backgroundColor: "#ffffff",
+            borderRadius: 10,
+            borderWidth: 1,
+            borderColor: "#e0e0e0",
+          }}
+          behavior="padding"
+        >
+          <SignInForm />
+        </KeyboardAvoidingView>
+      </Unauthenticated>
+      <Authenticated>
         <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
-          <Unauthenticated>
-            <KeyboardAvoidingView
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-                padding: 20,
-                backgroundColor: "#ffffff",
-                borderRadius: 10,
-                borderWidth: 1,
-                borderColor: "#e0e0e0",
-              }}
-              behavior="padding"
-            >
-              <SignInForm />
-            </KeyboardAvoidingView>
-          </Unauthenticated>
-          <Authenticated>
-            <Stack
-              screenOptions={{
-                headerShown: true,
-                title: "Guttakalender",
+          <Stack>
+            <Stack.Screen
+              name="(tabs)"
+              options={({ route }) => ({
+                headerBackVisible: true,
+                headerTintColor: "#fff",
+                title: getTabsTitle(route),
                 headerStyle: {
                   backgroundColor: "#25292e",
                 },
-                headerTitleStyle: {
-                  color: "#fff",
-                },
-                headerTintColor: "#fff",
+              })}
+            />
+            <Stack.Screen
+              name="modal"
+              options={{
+                presentation: "card",
+                title: "Legg til plan",
+                // animation: "slide_from_bottom",
+                headerBackVisible: false,
+                contentStyle: { backgroundColor: "#ffffff" },
               }}
-            >
-              <Stack.Screen
-                name="(tabs)"
-                options={{
-                  headerBackVisible: false,
-                }}
-              />
-              <Stack.Screen
-                name="modal"
-                options={{
-                  presentation: "card",
-                  // animation: "slide_from_bottom",
-                  headerBackVisible: false,
-                  contentStyle: { backgroundColor: "#ffffff" },
-                }}
-              />
-            </Stack>
-          </Authenticated>
+            />
+          </Stack>
         </SafeAreaView>
-      </SafeAreaProvider>
+      </Authenticated>
     </ConvexAuthProvider>
   );
 }
