@@ -61,17 +61,13 @@ export const addReaction = mutation({
     );
 
     if (hasReacted) {
-      // Remove the reaction (toggle off)
-      const updatedReactions = existingReactions.filter(
-        (r) => !(r.userId === userId && r.emoji === args.emoji),
-      );
-      await ctx.db.patch("chat", args.chatId, { reactions: updatedReactions });
-    } else {
-      // Add the reaction
-      await ctx.db.patch("chat", args.chatId, {
-        reactions: [...existingReactions, { emoji: args.emoji, userId }],
-      });
+      return;
     }
+
+    // Add the reaction if user does not already have this exact reaction.
+    await ctx.db.patch("chat", args.chatId, {
+      reactions: [...existingReactions, { emoji: args.emoji, userId }],
+    });
   },
 });
 

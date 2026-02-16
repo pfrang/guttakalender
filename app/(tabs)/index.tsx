@@ -1,7 +1,7 @@
 import { api } from "@/convex/_generated/api";
+import { ChatMessageBubble } from "../components/ChatMessageBubble";
 import { Button } from "@/lib/components/Button";
 import { Input } from "@/lib/components/Input";
-import { formatDateAndTime } from "@/lib/utils/date";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import Constants from "expo-constants";
@@ -216,47 +216,13 @@ export default function Index() {
               const isCurrentUser = isChatFromUser(msg.userId);
 
               return (
-                <View
+                <ChatMessageBubble
                   key={msg._id}
-                  style={[
-                    styles.messageRow,
-                    isCurrentUser
-                      ? styles.messageRowRight
-                      : styles.messageRowLeft,
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.bubble,
-                      isCurrentUser
-                        ? styles.currentUserBubble
-                        : styles.otherUserBubble,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.messageText,
-                        isCurrentUser && styles.currentUserMessageText,
-                      ]}
-                    >
-                      {msg.message}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.messageMeta,
-                        isCurrentUser && styles.currentUserMessageMeta,
-                      ]}
-                    >
-                      {user?.name ?? "Ukjent"} -{" "}
-                      {formatDateAndTime(
-                        new Date(msg._creationTime),
-                        "no",
-                        "short",
-                        true,
-                      )}
-                    </Text>
-                  </View>
-                </View>
+                  message={msg}
+                  userName={user?.name ?? "Ukjent"}
+                  isCurrentUser={isCurrentUser}
+                  currentUserId={currentUser?._id}
+                />
               );
             })
           )}
@@ -346,47 +312,6 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     textAlign: "center",
     marginTop: 24,
-  },
-  messageRow: {
-    width: "100%",
-    flexDirection: "row",
-  },
-  messageRowLeft: {
-    justifyContent: "flex-start",
-  },
-  messageRowRight: {
-    justifyContent: "flex-end",
-  },
-  bubble: {
-    maxWidth: "82%",
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderWidth: 1,
-  },
-  otherUserBubble: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E5E7EB",
-  },
-  currentUserBubble: {
-    backgroundColor: "#111827",
-    borderColor: "#111827",
-  },
-  messageText: {
-    color: "#1F2937",
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  currentUserMessageText: {
-    color: "#FFFFFF",
-  },
-  messageMeta: {
-    marginTop: 6,
-    fontSize: 11,
-    color: "#6B7280",
-  },
-  currentUserMessageMeta: {
-    color: "#D1D5DB",
   },
   composerContainer: {
     backgroundColor: "#FFFFFF",
