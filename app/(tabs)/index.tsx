@@ -1,5 +1,4 @@
 import { api } from "@/convex/_generated/api";
-import { ChatMessageBubble } from "../components/ChatMessageBubble";
 import { Button } from "@/lib/components/Button";
 import { Input } from "@/lib/components/Input";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,6 +16,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ChatMessageBubble } from "../components/ChatMessageBubble";
 
 export default function Index() {
   const insets = useSafeAreaInsets();
@@ -323,6 +323,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
+    fontFamily: "PlusJakartaSans_200ExtraLight",
   },
   input: {
     borderRadius: 12,

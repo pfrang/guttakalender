@@ -117,19 +117,7 @@ export function ChatMessageBubble({
 
   const selectReaction = async (emoji: string) => {
     setIsReactionPickerVisible(false);
-    if (!currentUserId || isUpdatingReaction || hasCurrentUserReaction(emoji)) {
-      return;
-    }
-
-    setIsUpdatingReaction(true);
-    try {
-      await addReaction({
-        chatId: message._id,
-        emoji,
-      });
-    } finally {
-      setIsUpdatingReaction(false);
-    }
+    await toggleReaction(emoji);
   };
 
   return (
@@ -221,12 +209,15 @@ export function ChatMessageBubble({
                 const reactedByCurrentUser = hasCurrentUserReaction(emoji);
 
                 return (
-                  <View
+                  <Pressable
                     key={emoji}
                     style={[
                       styles.reactionChip,
                       reactedByCurrentUser && styles.reactionChipActive,
                     ]}
+                    onPress={() => {
+                      reactedByCurrentUser && void toggleReaction(emoji);
+                    }}
                   >
                     <Text style={styles.reactionEmoji}>{emoji}</Text>
                     <Text
@@ -237,7 +228,7 @@ export function ChatMessageBubble({
                     >
                       {count}
                     </Text>
-                  </View>
+                  </Pressable>
                 );
               })}
             </View>

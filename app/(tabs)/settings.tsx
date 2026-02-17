@@ -5,6 +5,7 @@ import { SignOutButton } from "@/lib/components/SignOut";
 import { useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { FontTest } from "../components/Fonts";
 
 export default function Settings() {
   const user = useQuery(api.users.getCurrentUser);
@@ -81,6 +82,7 @@ export default function Settings() {
         )}
       </View>
       <SignOutButton />
+      <FontTest />
     </View>
   );
 }

@@ -112,9 +112,13 @@ export default function RootLayout() {
               options={{
                 presentation: "card",
                 title: "Legg til plan",
+                headerStyle: {
+                  backgroundColor: "#25292e",
+                },
+                headerTintColor: "#ffffff",
                 // animation: "slide_from_bottom",
                 headerBackVisible: false,
-                contentStyle: { backgroundColor: "#ffffff" },
+                contentStyle: { backgroundColor: "#25292e" },
               }}
             />
           </Stack>

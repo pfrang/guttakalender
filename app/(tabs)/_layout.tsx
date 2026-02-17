@@ -11,7 +11,7 @@ export default function TabLayout() {
 
 function MobileLayout() {
   return (
-    <NativeTabs backgroundColor={"#f0f"}>
+    <NativeTabs backgroundColor={"#25292e"}>
       <NativeTabs.Trigger name="index">
         <Label>Chat</Label>
         <Icon sf={"message"} />

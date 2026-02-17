@@ -58,8 +58,6 @@ export default function Modal() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Legg til ny plan</Text>
-
       <Input
         label="Hvor skjer det?"
         placeholder="Hvor"
@@ -112,11 +110,6 @@ const styles = StyleSheet.create({
   content: {
     padding: 16,
     gap: 14,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#111827",
   },
   textArea: {
     minHeight: 110,
