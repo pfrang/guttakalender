@@ -1,10 +1,10 @@
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
-import { Button } from "@/lib/components/Button";
 import { Text } from "@/lib/components/Text";
 import { formatDateAndTime } from "@/lib/utils/date";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useMutation, useQuery } from "convex/react";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
@@ -13,22 +13,10 @@ interface Props {
 }
 export function PlansList({ plans }: Props) {
   const joinPlan = useMutation(api.plans.addUserToPlan);
-  const deletePlan = useMutation(api.plans.deletePlan);
-  const removeUserFromPlan = useMutation(api.plans.removeUserFromPlan);
-  const [expandedPlanId, setExpandedPlanId] = useState<string | null>(null);
-  const [pendingActionPlanId, setPendingActionPlanId] = useState<string | null>(
+  const user = useQuery(api.users.getCurrentUser);
+  const [pendingJoinPlanId, setPendingJoinPlanId] = useState<string | null>(
     null,
   );
-  const allUsers = useQuery(api.users.getUsers);
-  const user = useQuery(api.users.getCurrentUser);
-
-  function getUserFromId(userId?: string) {
-    return allUsers?.find((item) => item._id === userId);
-  }
-
-  function isUserPlan(planUser?: string) {
-    return planUser === user?._id;
-  }
 
   function isAttending(attendees: string[]) {
     return attendees.some((attendee) => attendee === user?._id);
@@ -38,56 +26,31 @@ export function PlansList({ plans }: Props) {
     if (!user?._id) {
       return;
     }
-    setPendingActionPlanId(planId);
+    setPendingJoinPlanId(planId);
     try {
       await joinPlan({ id: planId, userId: user._id });
     } finally {
-      setPendingActionPlanId(null);
-    }
-  };
-
-  const onLeave = async (planId: Id<"plans">) => {
-    if (!user?._id) {
-      return;
-    }
-    setPendingActionPlanId(planId);
-    try {
-      await removeUserFromPlan({ id: planId, userId: user._id });
-    } finally {
-      setPendingActionPlanId(null);
-    }
-  };
-
-  const onDelete = async (planId: Id<"plans">) => {
-    setPendingActionPlanId(planId);
-    try {
-      await deletePlan({ planId });
-    } finally {
-      setPendingActionPlanId(null);
+      setPendingJoinPlanId(null);
     }
   };
 
   return (
     <View style={styles.list}>
       {plans.map((plan: Doc<"plans">) => {
-        const expanded = expandedPlanId === plan._id;
         const attending = isAttending(plan.attendees);
-        const isOwner = isUserPlan(plan.userId);
-        const busy = pendingActionPlanId === plan._id;
 
         return (
-          <View key={plan._id} style={styles.card}>
-            <Pressable
-              onPress={() =>
-                setExpandedPlanId((current) =>
-                  current === plan._id ? null : plan._id,
-                )
-              }
-              style={({ pressed }) => [
-                styles.cardHeader,
-                pressed && styles.cardHeaderPressed,
-              ]}
-            >
+          <Pressable
+            key={plan._id}
+            onPress={() =>
+              router.push({
+                pathname: "/[planId]",
+                params: { planId: plan._id },
+              })
+            }
+            style={({ pressed }) => [pressed && styles.cardHeaderPressed]}
+          >
+            <View style={styles.card}>
               <View style={styles.row}>
                 <Ionicons name="time-outline" size={18} color="#111827" />
                 <Text style={styles.infoText}>
@@ -98,62 +61,14 @@ export function PlansList({ plans }: Props) {
                 <Ionicons name="location-outline" size={18} color="#111827" />
                 <Text style={styles.infoText}>{plan.location}</Text>
               </View>
-            </Pressable>
-
-            {expanded ? (
-              <View style={styles.expanded}>
-                <View style={styles.ownerRow}>
-                  <Ionicons name="ribbon-outline" size={18} color="#111827" />
-                  <Text style={styles.ownerText}>
-                    {getUserFromId(plan.userId)?.name ?? "Ukjent"}
-                  </Text>
+              {user && attending && (
+                <View style={styles.detailsHintRow}>
+                  <Text style={styles.detailsHintText}>Du er meldt på </Text>
+                  <Ionicons name="chevron-forward" size={16} color="#6B7280" />
                 </View>
-
-                <Text style={styles.planText}>{plan.plan}</Text>
-
-                <View style={styles.attendeesHeader}>
-                  <Text style={styles.sectionTitle}>Pameldte</Text>
-                  {isOwner ? (
-                    <Button
-                      title={busy ? "Sletter..." : "Slett plan"}
-                      variant="secondary"
-                      onPress={() => void onDelete(plan._id)}
-                      disabled={busy}
-                    />
-                  ) : null}
-                </View>
-
-                <View style={styles.attendeesList}>
-                  {plan.attendees.map((attendeeId: string) => (
-                    <View key={attendeeId} style={styles.attendeeRow}>
-                      <Ionicons
-                        name="person-outline"
-                        size={16}
-                        color="#374151"
-                      />
-                      <Text style={styles.attendeeText}>
-                        {getUserFromId(attendeeId)?.name ?? "Ukjent bruker"}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-
-                <View style={styles.actions}>
-                  <Button
-                    title={busy ? "Sender..." : "Keen?"}
-                    onPress={() => void onJoin(plan._id)}
-                    disabled={busy || attending}
-                  />
-                  <Button
-                    title={busy ? "Sender..." : "Ukeen?"}
-                    variant="secondary"
-                    onPress={() => void onLeave(plan._id)}
-                    disabled={busy || !attending}
-                  />
-                </View>
-              </View>
-            ) : null}
-          </View>
+              )}
+            </View>
+          </Pressable>
         );
       })}
     </View>
@@ -164,22 +79,26 @@ export default PlansList;
 
 const styles = StyleSheet.create({
   list: {
-    gap: 12,
+    gap: 14,
   },
   card: {
     borderWidth: 1,
-    borderColor: "#E5E7EB",
-    borderRadius: 14,
+    borderColor: "#E6EAF0",
+    borderRadius: 16,
     backgroundColor: "#FFFFFF",
-    overflow: "hidden",
-  },
-  cardHeader: {
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    gap: 8,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    gap: 10,
+    paddingBottom: 10,
   },
   cardHeaderPressed: {
-    opacity: 0.9,
+    opacity: 0.95,
+    transform: [{ scale: 0.995 }],
   },
   row: {
     flexDirection: "row",
@@ -190,54 +109,43 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#111827",
   },
-  expanded: {
+  detailsHintRow: {
+    marginTop: 2,
     borderTopWidth: 1,
-    borderTopColor: "#E5E7EB",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    gap: 12,
-  },
-  ownerRow: {
+    borderTopColor: "#EEF2F7",
+    paddingTop: 10,
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-  },
-  ownerText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#111827",
-  },
-  planText: {
-    color: "#1F2937",
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  attendeesHeader: {
-    flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    gap: 10,
   },
-  sectionTitle: {
-    fontSize: 14,
+  detailsHintText: {
+    fontSize: 13,
     fontWeight: "600",
-    color: "#111827",
+    color: "#6B7280",
   },
-  attendeesList: {
-    gap: 6,
+  joinButtonWrapper: {
+    marginTop: 4,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+    alignItems: "flex-start",
   },
-  attendeeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+  joinButton: {
+    backgroundColor: "#25292e",
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
   },
-  attendeeText: {
-    color: "#374151",
-    fontSize: 14,
+  joinButtonPressed: {
+    opacity: 0.9,
   },
-  actions: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 8,
+  joinButtonText: {
+    textAlign: "center",
+    fontSize: 13,
+    fontWeight: "600",
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    backgroundColor: "#25292e",
+    color: "#ffffff",
   },
 });

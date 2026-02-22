@@ -7,7 +7,7 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
-export default function Modal() {
+export default function AddPlan() {
   const user = useQuery(api.users.getCurrentUser);
   const addPlan = useMutation(api.plans.addPlan);
 

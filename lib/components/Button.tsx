@@ -13,6 +13,7 @@ type ButtonProps = {
   disabled?: boolean;
   variant?: "primary" | "secondary";
   style?: StyleProp<ViewStyle>;
+  size?: "small" | "medium" | "large";
 };
 
 export function Button({
@@ -20,6 +21,7 @@ export function Button({
   onPress,
   disabled = false,
   variant = "primary",
+  size = "medium",
   style,
 }: ButtonProps) {
   const isPrimary = variant === "primary";
@@ -35,12 +37,23 @@ export function Button({
           isPrimary ? styles.buttonPrimary : styles.buttonSecondary,
           disabled && styles.buttonDisabled,
           pressed && styles.buttonPressed,
+          size === "small"
+            ? styles.buttonSmall
+            : size === "large"
+              ? styles.buttonLarge
+              : styles.buttonMedium,
+          style,
         ]}
       >
         <Text
           style={[
             styles.label,
             isPrimary ? styles.labelPrimary : styles.labelSecondary,
+            size === "small"
+              ? styles.labelSmall
+              : size === "large"
+                ? styles.labelLarge
+                : styles.labelMedium,
           ]}
         >
           {title}
@@ -65,6 +78,18 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 5,
   },
+  buttonSmall: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  buttonMedium: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
+  buttonLarge: {
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+  },
   buttonPrimary: {
     backgroundColor: "#111111",
     borderColor: "#111111",
@@ -85,6 +110,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
     letterSpacing: 0.3,
+  },
+  labelSmall: {
+    fontSize: 14,
+  },
+  labelMedium: {
+    fontSize: 16,
+  },
+  labelLarge: {
+    fontSize: 18,
   },
   labelPrimary: {
     color: "#FFFFFF",

@@ -50,7 +50,7 @@ export default function Plans() {
           { paddingBottom: nativeTabBarHeight + 20 },
         ]}
       >
-        <Link href="/modal" asChild>
+        <Link href="/AddPlan" asChild>
           <Pressable style={styles.fabButton}>
             <PlusIcon color="#ffffff" />
           </Pressable>

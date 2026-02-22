@@ -108,7 +108,7 @@ export default function RootLayout() {
               })}
             />
             <Stack.Screen
-              name="modal"
+              name="AddPlan"
               options={{
                 presentation: "card",
                 title: "Legg til plan",
@@ -119,6 +119,19 @@ export default function RootLayout() {
                 // animation: "slide_from_bottom",
                 headerBackVisible: false,
                 contentStyle: { backgroundColor: "#25292e" },
+              }}
+            />
+            <Stack.Screen
+              name="[planId]"
+              options={{
+                presentation: "modal",
+                animation: "slide_from_bottom",
+                title: "Plan",
+                headerStyle: {
+                  backgroundColor: "#25292e",
+                },
+                headerTintColor: "#ffffff",
+                contentStyle: { backgroundColor: "#ffffff" },
               }}
             />
           </Stack>
