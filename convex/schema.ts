@@ -7,6 +7,10 @@ import { v } from "convex/values";
 // The schema provides more precise TypeScript types.
 export default defineSchema({
   ...authTables,
+  groups: defineTable({
+    name: v.string(),
+    users: v.optional(v.array(v.id("users"))),
+  }).index("by_users", ["users"]),
   users: defineTable({
     name: v.optional(v.string()),
     image: v.optional(v.string()),
@@ -15,6 +19,7 @@ export default defineSchema({
     phone: v.optional(v.string()),
     phoneVerificationTime: v.optional(v.number()),
     isAnonymous: v.optional(v.boolean()),
+    groups: v.optional(v.array(v.id("groups"))),
     // other "users" fields...
   }).index("name", ["name"]),
   plans: defineTable({

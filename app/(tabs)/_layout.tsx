@@ -2,6 +2,7 @@ import { CalendarIcon } from "@/lib/icons/Calendar";
 import { ChatBubbleIcon } from "@/lib/icons/ChatBubble";
 import { SettingsIcon } from "@/lib/icons/Settings";
 import { isMobile } from "@/lib/utils/isMobile";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Tabs } from "expo-router";
 import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 
@@ -13,6 +14,10 @@ function MobileLayout() {
   return (
     <NativeTabs backgroundColor={"#25292e"}>
       <NativeTabs.Trigger name="index">
+        <Label>Hjem</Label>
+        <Icon sf={"house"} />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="chat">
         <Label>Chat</Label>
         <Icon sf={"message"} />
       </NativeTabs.Trigger>
@@ -45,6 +50,15 @@ function DesktopLayout() {
     >
       <Tabs.Screen
         name="index"
+        options={{
+          title: "Hjem",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name="home" size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="chat"
         options={{
           title: "Guttachat",
           tabBarIcon: ({ color, focused }) => <ChatBubbleIcon color={color} />,

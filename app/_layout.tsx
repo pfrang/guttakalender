@@ -108,6 +108,22 @@ export default function RootLayout() {
               })}
             />
             <Stack.Screen
+              name="AddGroup"
+              options={{
+                animation: "slide_from_bottom",
+                presentation: "formSheet",
+                sheetAllowedDetents: [0.9],
+                sheetInitialDetentIndex: 0,
+                title: "Legg til gruppe",
+                headerStyle: {
+                  backgroundColor: "#25292e",
+                },
+                headerTintColor: "#ffffff",
+                headerBackVisible: false,
+                contentStyle: { backgroundColor: "#ffffff" },
+              }}
+            />
+            <Stack.Screen
               name="AddPlan"
               options={{
                 presentation: "card",
@@ -122,13 +138,24 @@ export default function RootLayout() {
               }}
             />
             <Stack.Screen
-              name="[planId]"
+              name="plan/[id]"
               options={{
-                animation: "slide_from_bottom",
-                presentation: "formSheet",
-                sheetAllowedDetents: [0.9],
-                sheetInitialDetentIndex: 0,
+                animation: "slide_from_right",
+                presentation: "card",
                 title: "Plan",
+                headerStyle: {
+                  backgroundColor: "#25292e",
+                },
+                headerTintColor: "#ffffff",
+                contentStyle: { backgroundColor: "#25292e" },
+              }}
+            />
+            <Stack.Screen
+              name="[groupId]"
+              options={{
+                animation: "slide_from_right",
+                presentation: "card",
+                title: "Gruppe",
                 headerStyle: {
                   backgroundColor: "#25292e",
                 },

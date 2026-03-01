@@ -28,8 +28,8 @@ export function PlansList({ plans }: Props) {
             key={plan._id}
             onPress={() =>
               router.push({
-                pathname: "/[planId]",
-                params: { planId: plan._id },
+                pathname: "/plan/[id]",
+                params: { id: plan._id },
               })
             }
             style={({ pressed }) => [

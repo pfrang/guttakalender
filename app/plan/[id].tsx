@@ -10,8 +10,8 @@ import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 export default function PlanDetailsModal() {
-  const { planId } = useLocalSearchParams<{ planId?: string | string[] }>();
-  const normalizedPlanId = Array.isArray(planId) ? planId[0] : planId;
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
+  const normalizedId = Array.isArray(id) ? id[0] : id;
 
   const plans = useQuery(api.plans.getPlans);
   const allUsers = useQuery(api.users.getUsers);
@@ -21,7 +21,7 @@ export default function PlanDetailsModal() {
   const deletePlan = useMutation(api.plans.deletePlan);
   const [isMutating, setIsMutating] = useState(false);
 
-  const plan = plans?.find((item) => item._id === normalizedPlanId);
+  const plan = plans?.find((item) => item._id === normalizedId);
 
   function getUserFromId(userId?: string) {
     return allUsers?.find((item) => item._id === userId);
@@ -75,7 +75,7 @@ export default function PlanDetailsModal() {
     }
   };
 
-  if (!normalizedPlanId) {
+  if (!normalizedId) {
     return (
       <View style={styles.centered}>
         <Text style={styles.message}>Ugyldig plan-id.</Text>
