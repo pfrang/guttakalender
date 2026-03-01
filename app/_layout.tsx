@@ -140,8 +140,10 @@ export default function RootLayout() {
             <Stack.Screen
               name="plan/[id]"
               options={{
-                animation: "slide_from_right",
-                presentation: "card",
+                animation: "slide_from_bottom",
+                presentation: "formSheet",
+                sheetAllowedDetents: [0.9],
+                sheetInitialDetentIndex: 0,
                 title: "Plan",
                 headerStyle: {
                   backgroundColor: "#25292e",

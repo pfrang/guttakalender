@@ -1,9 +1,9 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { Button } from "@/lib/components/Button";
 import { useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { AddComponent } from "../components/Add";
 import { Group } from "../components/Group";
 
 export default function Index() {
@@ -16,10 +16,6 @@ export default function Index() {
   return (
     <View style={styles.container}>
       <Text>Dine grupper</Text>
-      <Button
-        title="Legg til gruppe"
-        onPress={() => router.push("/AddGroup")}
-      />
       <FlatList
         data={groups ?? []}
         renderItem={({ item }) => (
@@ -44,6 +40,7 @@ export default function Index() {
           elevation: 5,
         }}
       />
+      <AddComponent path="/AddGroup" />
     </View>
   );
 }
@@ -53,13 +50,5 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     gap: 16,
-  },
-
-  groupItem: {
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#E8ECF1",
   },
 });
