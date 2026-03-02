@@ -1,8 +1,8 @@
 import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { AddComponent } from "../components/Add";
-import { PlansList } from "../components/PlansList";
+import { AddComponent } from "../../../components/Add";
+import { PlansList } from "../../../components/PlansList";
 
 export default function Plans() {
   const plans = useQuery(api.plans.getPlans);

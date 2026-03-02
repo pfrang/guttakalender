@@ -1,10 +1,11 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { SignOutButton } from "@/lib/components/SignOut";
 import { useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { AddComponent } from "../components/Add";
-import { Group } from "../components/Group";
+import { AddComponent } from "./components/Add";
+import { Group } from "./components/Group";
 
 export default function Index() {
   const router = useRouter();
@@ -16,14 +17,15 @@ export default function Index() {
   return (
     <View style={styles.container}>
       <Text>Dine grupper</Text>
+      <SignOutButton />
       <FlatList
         data={groups ?? []}
         renderItem={({ item }) => (
           <Pressable
             onPress={() =>
               router.push({
-                pathname: "/[groupId]",
-                params: { groupId: item._id },
+                pathname: "/group/[id]",
+                params: { id: item._id as Id<"groups"> },
               })
             }
           >

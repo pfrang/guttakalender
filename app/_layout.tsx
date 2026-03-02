@@ -94,79 +94,21 @@ export default function RootLayout() {
         </KeyboardAvoidingView>
       </Unauthenticated>
       <Authenticated>
-        <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
-          <Stack>
+        <Stack>
+          <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
             <Stack.Screen
-              name="(tabs)"
-              options={({ route }) => ({
-                headerBackVisible: true,
-                headerTintColor: "#fff",
-                title: getTabsTitle(route),
-                headerStyle: {
-                  backgroundColor: "#25292e",
-                },
-              })}
-            />
-            <Stack.Screen
-              name="AddGroup"
+              name="index"
               options={{
-                animation: "slide_from_bottom",
-                presentation: "formSheet",
-                sheetAllowedDetents: [0.9],
-                sheetInitialDetentIndex: 0,
-                title: "Legg til gruppe",
+                title: "Guttakalender",
+                headerShown: false,
+                headerTintColor: "#ffffff",
                 headerStyle: {
                   backgroundColor: "#25292e",
                 },
-                headerTintColor: "#ffffff",
-                headerBackVisible: false,
-                contentStyle: { backgroundColor: "#ffffff" },
               }}
             />
-            <Stack.Screen
-              name="AddPlan"
-              options={{
-                presentation: "card",
-                title: "Legg til plan",
-                headerStyle: {
-                  backgroundColor: "#25292e",
-                },
-                headerTintColor: "#ffffff",
-                // animation: "slide_from_bottom",
-                headerBackVisible: false,
-                contentStyle: { backgroundColor: "#25292e" },
-              }}
-            />
-            <Stack.Screen
-              name="plan/[id]"
-              options={{
-                animation: "slide_from_bottom",
-                presentation: "formSheet",
-                sheetAllowedDetents: [0.9],
-                sheetInitialDetentIndex: 0,
-                title: "Plan",
-                headerStyle: {
-                  backgroundColor: "#25292e",
-                },
-                headerTintColor: "#ffffff",
-                contentStyle: { backgroundColor: "#25292e" },
-              }}
-            />
-            <Stack.Screen
-              name="[groupId]"
-              options={{
-                animation: "slide_from_right",
-                presentation: "card",
-                title: "Gruppe",
-                headerStyle: {
-                  backgroundColor: "#25292e",
-                },
-                headerTintColor: "#ffffff",
-                contentStyle: { backgroundColor: "#ffffff" },
-              }}
-            />
-          </Stack>
-        </SafeAreaView>
+          </SafeAreaView>
+        </Stack>
       </Authenticated>
     </ConvexAuthProvider>
   );
