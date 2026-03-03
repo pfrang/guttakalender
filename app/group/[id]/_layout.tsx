@@ -1,6 +1,10 @@
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
-import { Authenticated } from "convex/react";
-import { Stack } from "expo-router";
+import { Authenticated, useQuery } from "convex/react";
+import { Stack, useGlobalSearchParams, useRouter } from "expo-router";
+import { Pressable } from "react-native";
 
 function getTabsTitle(
   route: Parameters<typeof getFocusedRouteNameFromRoute>[0],
@@ -19,21 +23,37 @@ function getTabsTitle(
 }
 
 export default function GroupLayout() {
+  const router = useRouter();
+  const { id } = useGlobalSearchParams<{ id?: string | string[] }>();
+  const groupId = Array.isArray(id) ? id[0] : id;
+
+  const group = useQuery(
+    api.groups.getGroupById,
+    groupId ? { id: groupId as Id<"groups"> } : "skip",
+  );
+
+  const backButton = (
+    <Pressable onPress={() => router.back()} hitSlop={8}>
+      <Ionicons name="chevron-back" size={28} color="#fff" />
+    </Pressable>
+  );
+
   return (
     <Authenticated>
-      <Stack screenOptions={{ contentStyle: { flex: 1 } }}>
+      <Stack>
         <Stack.Screen
           name="(tabs)"
-          options={({ route }) => ({
+          options={{
             headerShown: false,
             headerTintColor: "#fff",
-            title: getTabsTitle(route),
+            title: group?.name ?? "Gruppe",
             headerStyle: {
               backgroundColor: "#25292e",
             },
-            contentStyle: { flex: 1 },
-          })}
+            headerLeft: () => backButton,
+          }}
         />
+
         {/* <Stack.Screen
             name="AddGroup"
             options={{
