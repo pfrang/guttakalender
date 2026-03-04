@@ -4,12 +4,13 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 export const getPlans = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    groupId: v.id("groups"),
+  },
+  handler: async (ctx, args) => {
     return await ctx.db
       .query("plans")
-      .withIndex("by_date")
-      .order("asc")
+      .withIndex("by_groupId", (q) => q.eq("groupId", args.groupId))
       .collect();
   },
 });
@@ -19,8 +20,8 @@ export const addPlan = mutation({
     date: v.string(),
     location: v.string(),
     plan: v.string(),
-    userId: v.string(),
-    attendees: v.array(v.string()),
+    groupId: v.id("groups"),
+    attendees: v.array(v.id("users")),
   },
 
   handler: async (ctx, args) => {
@@ -32,7 +33,8 @@ export const addPlan = mutation({
     await ctx.db.insert("plans", {
       date: args.date,
       plan: args.plan,
-      userId: args.userId,
+      creator: userId,
+      groupId: args.groupId,
       attendees: args.attendees,
       location: args.location,
     });
@@ -56,8 +58,7 @@ export const deletePlan = mutation({
       throw new Error("Plan not found");
     }
 
-    // Optional: Only allow the creator to delete
-    if (plan.userId !== userId) {
+    if (plan.creator !== userId) {
       throw new Error("You can only delete your own plans");
     }
 
@@ -68,7 +69,7 @@ export const deletePlan = mutation({
 export const addUserToPlan = mutation({
   args: {
     id: v.id("plans"),
-    userId: v.string(),
+    userId: v.id("users"),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -78,7 +79,7 @@ export const addUserToPlan = mutation({
     const plan = await ctx.db.get("plans", args.id);
 
     if (!plan) {
-      throw new Error("Task not found");
+      throw new Error("Plan not found");
     }
 
     return await ctx.db.patch("plans", args.id, {
@@ -90,7 +91,7 @@ export const addUserToPlan = mutation({
 export const removeUserFromPlan = mutation({
   args: {
     id: v.id("plans"),
-    userId: v.string(),
+    userId: v.id("users"),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -100,7 +101,7 @@ export const removeUserFromPlan = mutation({
     const plan = await ctx.db.get("plans", args.id);
 
     if (!plan) {
-      throw new Error("Task not found");
+      throw new Error("Plan not found");
     }
 
     const updatedAttendees = plan.attendees.filter(

@@ -1,22 +1,24 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { Authenticated, useQuery } from "convex/react";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { Pressable } from "react-native";
+import { Stack, useLocalSearchParams, useNavigation } from "expo-router";
+import { useEffect } from "react";
 
 export default function GroupLayout() {
-  const router = useRouter();
+  const navigation = useNavigation();
   const params = useLocalSearchParams();
   const groupId = typeof params.id === "string" ? params.id : params.id?.[0];
-  const nameParam = typeof params.name === "string" ? params.name : undefined;
 
   const group = useQuery(
     api.groups.getGroupById,
     groupId ? { id: groupId as Id<"groups"> } : "skip",
   );
 
-  const title = group?.name ?? nameParam ?? "";
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: group?.name ?? "",
+    });
+  }, [navigation, group?.name]);
 
   return (
     <Authenticated>
@@ -24,21 +26,13 @@ export default function GroupLayout() {
         <Stack.Screen
           name="(tabs)"
           options={{
-            headerShown: true,
-            title,
-            headerTintColor: "#25292e",
-            headerBackButtonDisplayMode: "minimal",
-            headerLeft: () => (
-              <Pressable onPress={() => router.dismissAll()} hitSlop={8}>
-                <Ionicons name="chevron-back" size={28} color="#25292e" />
-              </Pressable>
-            ),
+            headerShown: false,
           }}
         />
         <Stack.Screen
           name="plans/[planId]"
           options={{
-            headerShown: true,
+            headerShown: false,
             title: "Plan",
             headerTintColor: "#25292e",
             headerBackButtonDisplayMode: "minimal",

@@ -5,7 +5,11 @@ import { Text } from "@/lib/components/Text";
 import { formatDateAndTime } from "@/lib/utils/date";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useMutation, useQuery } from "convex/react";
-import { router, useLocalSearchParams } from "expo-router";
+import {
+  router,
+  useGlobalSearchParams,
+  useLocalSearchParams,
+} from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
@@ -13,8 +17,13 @@ export default function PlanDetailsModal() {
   const { planId } = useLocalSearchParams<{
     planId?: string | string[];
   }>();
+  const { id } = useGlobalSearchParams<{ id?: string | string[] }>();
+  const groupId = Array.isArray(id) ? id[0] : id;
 
-  const plans = useQuery(api.plans.getPlans);
+  const plans = useQuery(
+    api.plans.getPlans,
+    groupId ? { groupId: groupId as Id<"groups"> } : "skip",
+  );
   const allUsers = useQuery(api.users.getUsers);
   const user = useQuery(api.users.getCurrentUser);
   const joinPlan = useMutation(api.plans.addUserToPlan);
@@ -28,8 +37,8 @@ export default function PlanDetailsModal() {
     return allUsers?.find((item) => item._id === userId);
   }
 
-  function isUserPlan(planUser?: string) {
-    return planUser === user?._id;
+  function isUserPlan(creator?: string) {
+    return creator === user?._id;
   }
 
   function isAttending(attendees: string[]) {
@@ -101,7 +110,7 @@ export default function PlanDetailsModal() {
   }
 
   const attending = isAttending(plan.attendees);
-  const isOwner = isUserPlan(plan.userId);
+  const isOwner = isUserPlan(plan.creator);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -121,7 +130,7 @@ export default function PlanDetailsModal() {
         <View style={styles.ownerRow}>
           <Ionicons name="ribbon-outline" size={18} color="#111827" />
           <Text style={styles.ownerText}>
-            {getUserFromId(plan.userId)?.name ?? "Ukjent"}
+            {getUserFromId(plan.creator)?.name ?? "Ukjent"}
           </Text>
         </View>
 

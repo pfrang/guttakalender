@@ -1,9 +1,11 @@
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/lib/components/Button";
 import { Input } from "@/lib/components/Input";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import Constants from "expo-constants";
+import { useGlobalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   Animated,
@@ -20,7 +22,12 @@ import { ChatMessageBubble } from "../../../components/ChatMessageBubble";
 
 export default function Chat() {
   const insets = useSafeAreaInsets();
-  const messages = useQuery(api.chat.getChats);
+  const { id } = useGlobalSearchParams<{ id?: string | string[] }>();
+  const groupId = Array.isArray(id) ? id[0] : id;
+  const messages = useQuery(
+    api.chat.getChats,
+    groupId ? { groupId: groupId as Id<"groups"> } : "skip",
+  );
   const users = useQuery(api.users.getUsers);
   const currentUser = useQuery(api.users.getCurrentUser);
   const sendMessage = useMutation(api.chat.addChat);
@@ -132,13 +139,13 @@ export default function Chat() {
 
   const handleSend = async () => {
     const trimmed = message.trim();
-    if (!trimmed) {
+    if (!trimmed || !groupId) {
       return;
     }
     setError(null);
     setIsSending(true);
     try {
-      await sendMessage({ message: trimmed });
+      await sendMessage({ message: trimmed, groupId: groupId as Id<"groups"> });
       setMessage("");
     } catch (sendError) {
       setError(

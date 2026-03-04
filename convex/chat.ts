@@ -5,15 +5,21 @@ import { internal } from "./_generated/api";
 import { mutation, query } from "./_generated/server";
 
 export const getChats = query({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.db.query("chat").collect();
+  args: {
+    groupId: v.id("groups"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("chat")
+      .withIndex("by_groupId", (q) => q.eq("groupId", args.groupId))
+      .collect();
   },
 });
 
 export const addChat = mutation({
   args: {
     message: v.string(),
+    groupId: v.id("groups"),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -24,6 +30,7 @@ export const addChat = mutation({
     await ctx.db.insert("chat", {
       message: args.message,
       userId: userId,
+      groupId: args.groupId,
     });
 
     const sender = await ctx.db.get(userId);
@@ -33,6 +40,7 @@ export const addChat = mutation({
       senderUserId: userId,
       senderName,
       message: args.message,
+      groupId: args.groupId,
     });
   },
 });

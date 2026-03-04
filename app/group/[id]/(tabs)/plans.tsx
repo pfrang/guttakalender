@@ -7,13 +7,17 @@ import { AddComponent } from "../../../components/Add";
 import { PlansList } from "../components/PlansList";
 
 export default function Plans() {
-  const plans = useQuery(api.plans.getPlans);
+  const { id } = useGlobalSearchParams<{ id?: string | string[] }>();
+  const groupId = Array.isArray(id) ? id[0] : id;
+  const plans = useQuery(
+    api.plans.getPlans,
+    groupId ? { groupId: groupId as Id<"groups"> } : "skip",
+  );
   const allUsers = useQuery(api.users.getUsers);
   const user = useQuery(api.users.getCurrentUser);
-  const { id } = useGlobalSearchParams<{ id?: string | string[] }>();
   const group = useQuery(
     api.groups.getGroupById,
-    id ? { id: id as Id<"groups"> } : "skip",
+    groupId ? { id: groupId as Id<"groups"> } : "skip",
   );
 
   const plansAfterToday = plans ?? [];
@@ -29,7 +33,10 @@ export default function Plans() {
         ) : !hasPlans ? (
           <Text style={styles.message}>Ingen planer lagt til enda</Text>
         ) : (
-          <PlansList plans={plansAfterToday} groupId={id as Id<"groups">} />
+          <PlansList
+            plans={plansAfterToday}
+            groupId={groupId as Id<"groups">}
+          />
         )}
       </ScrollView>
       <AddComponent path={`/group/${id}/AddPlan`} />

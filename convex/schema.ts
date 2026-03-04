@@ -25,13 +25,17 @@ export default defineSchema({
   plans: defineTable({
     location: v.string(),
     date: v.string(),
-    userId: v.string(),
+    creator: v.id("users"),
+    groupId: v.id("groups"),
     plan: v.string(),
-    attendees: v.array(v.string()),
-  }).index("by_date", ["date"]),
+    attendees: v.array(v.id("users")),
+  })
+    .index("by_date", ["date"])
+    .index("by_groupId", ["groupId"]),
   chat: defineTable({
     message: v.string(),
     userId: v.string(),
+    groupId: v.id("groups"),
     reactions: v.optional(
       v.array(
         v.object({
@@ -40,7 +44,7 @@ export default defineSchema({
         }),
       ),
     ),
-  }),
+  }).index("by_groupId", ["groupId"]),
   pushTokens: defineTable({
     userId: v.string(),
     token: v.string(),

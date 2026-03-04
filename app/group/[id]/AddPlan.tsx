@@ -1,13 +1,16 @@
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/lib/components/Button";
 import { Datepicker } from "@/lib/components/Datepicker";
 import { Input } from "@/lib/components/Input";
 import { useMutation, useQuery } from "convex/react";
-import { router } from "expo-router";
+import { router, useGlobalSearchParams } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function AddPlan() {
+  const { id } = useGlobalSearchParams<{ id?: string | string[] }>();
+  const groupId = Array.isArray(id) ? id[0] : id;
   const user = useQuery(api.users.getCurrentUser);
   const addPlan = useMutation(api.plans.addPlan);
 
@@ -20,6 +23,11 @@ export default function AddPlan() {
   const handleSubmit = async () => {
     if (!user?._id) {
       setError("Du ma vere logget inn for a legge til plan.");
+      return;
+    }
+
+    if (!groupId) {
+      setError("Mangler gruppe-id.");
       return;
     }
 
@@ -37,7 +45,7 @@ export default function AddPlan() {
         location: trimmedLocation,
         date: date.toISOString(),
         plan: trimmedPlan,
-        userId: user._id,
+        groupId: groupId as Id<"groups">,
         attendees: [user._id],
       });
 

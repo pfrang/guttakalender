@@ -23,6 +23,7 @@ export const sendChatNotifications = internalAction({
     senderUserId: v.string(),
     message: v.string(),
     senderName: v.string(),
+    groupId: v.id("groups"),
   },
   handler: async (ctx, args) => {
     const recipients = await ctx.runQuery(
@@ -44,7 +45,7 @@ export const sendChatNotifications = internalAction({
       sound: "default",
       title: "Ny melding",
       body: `${args.senderName}: ${args.message}`,
-      data: { route: "/(tabs)" },
+      data: { route: `/group/${args.groupId}/(tabs)` },
     }));
 
     const chunks = chunkMessages(payload, 100);

@@ -78,7 +78,7 @@ export default function RootLayout() {
         </KeyboardAvoidingView>
       </Unauthenticated>
       <Authenticated>
-        <Stack>
+        <Stack screenOptions={{ headerShown: true }}>
           <Stack.Screen
             name="index"
             options={{
@@ -101,7 +101,8 @@ export default function RootLayout() {
           <Stack.Screen
             name="group/[id]"
             options={{
-              headerShown: false,
+              headerBackButtonDisplayMode: "minimal",
+              headerTintColor: "#25292e",
             }}
           />
         </Stack>
