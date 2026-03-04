@@ -1,10 +1,9 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { Authenticated, useQuery } from "convex/react";
-import { Stack, useGlobalSearchParams, useRouter } from "expo-router";
-import { Pressable } from "react-native";
+import { Stack, useLocalSearchParams, useNavigation } from "expo-router";
+import { useEffect } from "react";
 
 function getTabsTitle(
   route: Parameters<typeof getFocusedRouteNameFromRoute>[0],
@@ -23,20 +22,20 @@ function getTabsTitle(
 }
 
 export default function GroupLayout() {
-  const router = useRouter();
-  const { id } = useGlobalSearchParams<{ id?: string | string[] }>();
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
   const groupId = Array.isArray(id) ? id[0] : id;
+  const navigation = useNavigation();
 
   const group = useQuery(
     api.groups.getGroupById,
     groupId ? { id: groupId as Id<"groups"> } : "skip",
   );
 
-  const backButton = (
-    <Pressable onPress={() => router.back()} hitSlop={8}>
-      <Ionicons name="chevron-back" size={28} color="#fff" />
-    </Pressable>
-  );
+  useEffect(() => {
+    navigation.setOptions({
+      title: group?.name ?? "",
+    });
+  }, [navigation, group?.name]);
 
   return (
     <Authenticated>
@@ -45,15 +44,24 @@ export default function GroupLayout() {
           name="(tabs)"
           options={{
             headerShown: false,
-            headerTintColor: "#fff",
-            title: group?.name ?? "Gruppe",
-            headerStyle: {
-              backgroundColor: "#25292e",
-            },
-            headerLeft: () => backButton,
           }}
         />
-
+        <Stack.Screen
+          name="plans/[planId]"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="AddPlan"
+          options={{
+            headerShown: false,
+            animation: "slide_from_bottom",
+            presentation: "formSheet",
+            sheetAllowedDetents: [0.9],
+            sheetInitialDetentIndex: 0,
+          }}
+        />
         {/* <Stack.Screen
             name="AddGroup"
             options={{

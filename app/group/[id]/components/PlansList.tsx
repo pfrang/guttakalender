@@ -1,5 +1,5 @@
 import { api } from "@/convex/_generated/api";
-import { Doc } from "@/convex/_generated/dataModel";
+import { Doc, Id } from "@/convex/_generated/dataModel";
 import { Text } from "@/lib/components/Text";
 import { formatDateAndTime } from "@/lib/utils/date";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -10,8 +10,9 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 interface Props {
   plans: Doc<"plans">[];
+  groupId: Id<"groups">;
 }
-export function PlansList({ plans }: Props) {
+export function PlansList({ plans, groupId }: Props) {
   const user = useQuery(api.users.getCurrentUser);
 
   function isAttending(attendees: string[]) {
@@ -28,8 +29,11 @@ export function PlansList({ plans }: Props) {
             key={plan._id}
             onPress={() =>
               router.push({
-                pathname: "/plan/[id]",
-                params: { id: plan._id },
+                pathname: "/group/[id]/plans/[planId]",
+                params: {
+                  id: groupId,
+                  planId: plan._id as Id<"plans">,
+                },
               })
             }
             style={({ pressed }) => [

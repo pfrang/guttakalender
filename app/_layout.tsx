@@ -1,19 +1,15 @@
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
 import { SignInForm } from "@/lib/components/SignInForm";
 import { ConvexAuthProvider, type TokenStorage } from "@convex-dev/auth/react";
-import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import {
   Authenticated,
   ConvexReactClient,
   Unauthenticated,
-  useQuery,
 } from "convex/react";
-import { Stack, useGlobalSearchParams } from "expo-router";
+import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
+import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!);
 
@@ -40,22 +36,6 @@ const nativeStorage: TokenStorage = {
 
 const tokenStorage = Platform.OS === "web" ? webStorage : nativeStorage;
 
-function getTabsTitle(
-  route: Parameters<typeof getFocusedRouteNameFromRoute>[0],
-) {
-  const focusedRoute = getFocusedRouteNameFromRoute(route) ?? "index";
-
-  switch (focusedRoute) {
-    case "plans":
-      return "Planer";
-    case "settings":
-      return "Instillinger";
-    case "index":
-    default:
-      return "Guttachat";
-  }
-}
-
 export default function RootLayout() {
   useEffect(() => {
     if (Platform.OS !== "ios" && Platform.OS !== "android") {
@@ -77,15 +57,9 @@ export default function RootLayout() {
     void configureNotifications();
   }, []);
 
-  function getGroupTitle(
-    route: Parameters<typeof getFocusedRouteNameFromRoute>[0],
-  ) {
-    const focusedRoute = getFocusedRouteNameFromRoute(route) ?? "index";
-    return focusedRoute;
-  }
-
   return (
     <ConvexAuthProvider client={convex} storage={tokenStorage}>
+      <StatusBar style="auto" />
       <Unauthenticated>
         <KeyboardAvoidingView
           style={{
@@ -104,49 +78,26 @@ export default function RootLayout() {
         </KeyboardAvoidingView>
       </Unauthenticated>
       <Authenticated>
-        <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
-          <Stack>
-            <Stack.Screen
-              name="index"
-              options={{
-                title: "Dine grupper",
-                headerShown: true,
-                headerTintColor: "#ffffff",
-                headerTitleAlign: "center",
-                headerStyle: {
-                  backgroundColor: "#25292e",
-                },
-              }}
-            />
-            <GroupRoute />
-          </Stack>
-        </SafeAreaView>
+        <Stack>
+          <Stack.Screen
+            name="index"
+            options={{
+              title: "Dine grupper",
+              headerShown: true,
+              headerTintColor: "#25292e",
+            }}
+          />
+          <Stack.Screen
+            name="group/[id]"
+            options={{
+              headerShown: true,
+              headerTintColor: "#25292e",
+              headerBackVisible: true,
+              headerBackButtonDisplayMode: "minimal",
+            }}
+          />
+        </Stack>
       </Authenticated>
     </ConvexAuthProvider>
-  );
-}
-
-function GroupRoute() {
-  const { id } = useGlobalSearchParams<{ id?: string | string[] }>();
-  const groupId = Array.isArray(id) ? id[0] : id;
-
-  const group = useQuery(
-    api.groups.getGroupById,
-    groupId ? { id: groupId as Id<"groups"> } : "skip",
-  );
-
-  return (
-    <Stack.Screen
-      name="group/[id]"
-      options={{
-        title: group?.name ?? "",
-        headerShown: true,
-        headerTintColor: "#ffffff",
-        headerTitleAlign: "center",
-        headerStyle: {
-          backgroundColor: "#25292e",
-        },
-      }}
-    />
   );
 }
