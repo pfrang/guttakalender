@@ -1,41 +1,22 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Authenticated, useQuery } from "convex/react";
-import { Stack, useLocalSearchParams, useNavigation } from "expo-router";
-import { useEffect } from "react";
-
-function getTabsTitle(
-  route: Parameters<typeof getFocusedRouteNameFromRoute>[0],
-) {
-  const focusedRoute = getFocusedRouteNameFromRoute(route) ?? "index";
-
-  switch (focusedRoute) {
-    case "plans":
-      return "Planer";
-    case "settings":
-      return "Instillinger";
-    case "index":
-    default:
-      return "Guttachat";
-  }
-}
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { Pressable } from "react-native";
 
 export default function GroupLayout() {
-  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
-  const groupId = Array.isArray(id) ? id[0] : id;
-  const navigation = useNavigation();
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const groupId = typeof params.id === "string" ? params.id : params.id?.[0];
+  const nameParam = typeof params.name === "string" ? params.name : undefined;
 
   const group = useQuery(
     api.groups.getGroupById,
     groupId ? { id: groupId as Id<"groups"> } : "skip",
   );
 
-  useEffect(() => {
-    navigation.setOptions({
-      title: group?.name ?? "",
-    });
-  }, [navigation, group?.name]);
+  const title = group?.name ?? nameParam ?? "";
 
   return (
     <Authenticated>
@@ -43,19 +24,32 @@ export default function GroupLayout() {
         <Stack.Screen
           name="(tabs)"
           options={{
-            headerShown: false,
+            headerShown: true,
+            title,
+            headerTintColor: "#25292e",
+            headerBackButtonDisplayMode: "minimal",
+            headerLeft: () => (
+              <Pressable onPress={() => router.dismissAll()} hitSlop={8}>
+                <Ionicons name="chevron-back" size={28} color="#25292e" />
+              </Pressable>
+            ),
           }}
         />
         <Stack.Screen
           name="plans/[planId]"
           options={{
-            headerShown: false,
+            headerShown: true,
+            title: "Plan",
+            headerTintColor: "#25292e",
+            headerBackButtonDisplayMode: "minimal",
           }}
         />
         <Stack.Screen
           name="AddPlan"
           options={{
-            headerShown: false,
+            title: "Legg til plan",
+            headerTintColor: "#25292e",
+            headerBackButtonDisplayMode: "minimal",
             animation: "slide_from_bottom",
             presentation: "formSheet",
             sheetAllowedDetents: [0.9],

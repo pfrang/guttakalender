@@ -21,6 +21,7 @@ export default function GroupDetails() {
         {formatDateAndTime(new Date(group?._creationTime ?? 0), "no", "medium")}
       </Text>
       <Text>{group?.name}</Text>
+      <Text>{group?._id}</Text>
     </View>
   );
 }

@@ -88,12 +88,20 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen
+            name="AddGroup"
+            options={{
+              title: "Legg til gruppe",
+              headerTintColor: "#25292e",
+              animation: "slide_from_bottom",
+              presentation: "formSheet",
+              sheetAllowedDetents: [0.9],
+              sheetInitialDetentIndex: 0,
+            }}
+          />
+          <Stack.Screen
             name="group/[id]"
             options={{
-              headerShown: true,
-              headerTintColor: "#25292e",
-              headerBackVisible: true,
-              headerBackButtonDisplayMode: "minimal",
+              headerShown: false,
             }}
           />
         </Stack>
