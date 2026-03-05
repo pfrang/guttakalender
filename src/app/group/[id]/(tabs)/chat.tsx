@@ -193,7 +193,7 @@ export default function Chat() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={"padding"}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={40}
       enabled
     >
@@ -259,7 +259,7 @@ export default function Chat() {
           </Animated.View>
         ) : null}
       </View>
-      <View style={[{ paddingBottom: insets.bottom + nativeTabBarHeight + 2 }]}>
+      <View style={[{ paddingBottom: insets.bottom }]}>
         <View style={styles.form}>
           <Input
             containerStyle={styles.inputContainer}
