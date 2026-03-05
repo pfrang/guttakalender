@@ -18,7 +18,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ChatMessageBubble } from "../../../components/ChatMessageBubble";
+import { ChatMessageBubble } from "../../../../components/ChatMessageBubble";
 
 export default function Chat() {
   const insets = useSafeAreaInsets();

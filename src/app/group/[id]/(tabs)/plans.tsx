@@ -3,8 +3,8 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { useGlobalSearchParams } from "expo-router";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { AddComponent } from "../../../components/Add";
-import { PlansList } from "../components/PlansList";
+import { AddComponent } from "../../../../components/Add";
+import { PlansList } from "../../../../components/PlansList";
 
 export default function Plans() {
   const { id } = useGlobalSearchParams<{ id?: string | string[] }>();

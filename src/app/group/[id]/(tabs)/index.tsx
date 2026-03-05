@@ -2,11 +2,11 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { formatDateAndTime } from "@/lib/utils/date";
 import { useQuery } from "convex/react";
-import { useLocalSearchParams } from "expo-router";
+import { useGlobalSearchParams } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
 export default function GroupDetails() {
-  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
+  const { id } = useGlobalSearchParams<{ id?: string | string[] }>();
   const groupId = Array.isArray(id) ? id[0] : id;
   const group = useQuery(
     api.groups.getGroupById,

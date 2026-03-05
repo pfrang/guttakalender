@@ -83,7 +83,6 @@ export default function RootLayout() {
             name="index"
             options={{
               title: "Dine grupper",
-              headerShown: true,
               headerTintColor: "#25292e",
             }}
           />
@@ -93,9 +92,7 @@ export default function RootLayout() {
               title: "Legg til gruppe",
               headerTintColor: "#25292e",
               animation: "slide_from_bottom",
-              presentation: "formSheet",
-              sheetAllowedDetents: [0.9],
-              sheetInitialDetentIndex: 0,
+              presentation: "modal",
             }}
           />
           <Stack.Screen

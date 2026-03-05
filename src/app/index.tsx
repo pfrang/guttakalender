@@ -4,8 +4,8 @@ import { SignOutButton } from "@/lib/components/SignOut";
 import { useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { AddComponent } from "./components/Add";
-import { Group } from "./components/Group";
+import { AddComponent } from "../components/Add";
+import { Group } from "../components/Group";
 
 export default function Index() {
   const router = useRouter();
