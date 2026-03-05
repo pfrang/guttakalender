@@ -98,7 +98,7 @@ export default function RootLayout() {
           <Stack.Screen
             name="group/[id]"
             options={{
-              headerBackButtonDisplayMode: "minimal",
+              headerShown: false,
               headerTintColor: "#25292e",
             }}
           />
