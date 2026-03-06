@@ -13,7 +13,6 @@ export default function GroupDetails() {
     groupId ? { id: groupId as Id<"groups"> } : "skip",
   );
   const users = useQuery(api.users.getUsers);
-  const user = useQuery(api.users.getCurrentUser);
 
   const groupUsers = users?.filter((user) => group?.users?.includes(user._id));
   const groupUserNames = groupUsers?.map((user) => user.name).join(", ");
@@ -35,5 +34,6 @@ export default function GroupDetails() {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
+    gap: 8,
   },
 });
