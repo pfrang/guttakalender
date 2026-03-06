@@ -1,10 +1,14 @@
-import { Doc } from "@/convex/_generated/dataModel";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { useQuery } from "convex/react";
 import { StyleSheet, Text, View } from "react-native";
 
-export function Group({ group }: { group: Doc<"groups"> }) {
+export function Group({ groupId }: { groupId: Id<"groups"> }) {
+  const groupData = useQuery(api.groups.getGroupById, { id: groupId });
+
   return (
     <View style={styles.container}>
-      <Text>{group.name}</Text>
+      <Text>{groupData?.name}</Text>
     </View>
   );
 }

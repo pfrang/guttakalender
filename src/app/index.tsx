@@ -1,8 +1,7 @@
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import { SignOutButton } from "@/lib/components/SignOut";
+import { Button } from "@/lib/components/Button";
 import { useQuery } from "convex/react";
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { AddComponent } from "../components/Add";
 import { Group } from "../components/Group";
@@ -10,29 +9,40 @@ import { Group } from "../components/Group";
 export default function Index() {
   const router = useRouter();
   const user = useQuery(api.users.getCurrentUser);
-  const groups = useQuery(api.groups.getGroupsForUser, {
-    userId: user?._id as Id<"users">,
-  });
 
   return (
     <View style={styles.container}>
+      <View
+        style={{
+          justifyContent: "space-between",
+          width: "100%",
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
+        <Link href="/JoinGroup" asChild>
+          <Button title="Bli med i gruppe" />
+        </Link>
+        <Link href="/settings" asChild>
+          <Button variant="secondary" title="Instillinger" />
+        </Link>
+      </View>
       <Text>Dine grupper</Text>
-      <SignOutButton />
       <FlatList
-        data={groups ?? []}
+        data={user?.groups ?? []}
         renderItem={({ item }) => (
           <Pressable
             onPress={() =>
               router.push({
                 pathname: "/group/[id]",
-                params: { id: item._id as Id<"groups"> },
+                params: { id: item },
               })
             }
           >
-            <Group group={item} />
+            <Group groupId={item} />
           </Pressable>
         )}
-        keyExtractor={(item) => item._id}
+        keyExtractor={(item) => item}
         contentContainerStyle={{
           gap: 16,
           shadowColor: "#000",

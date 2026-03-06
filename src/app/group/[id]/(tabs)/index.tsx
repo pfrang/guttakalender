@@ -12,6 +12,11 @@ export default function GroupDetails() {
     api.groups.getGroupById,
     groupId ? { id: groupId as Id<"groups"> } : "skip",
   );
+  const users = useQuery(api.users.getUsers);
+  const user = useQuery(api.users.getCurrentUser);
+
+  const groupUsers = users?.filter((user) => group?.users?.includes(user._id));
+  const groupUserNames = groupUsers?.map((user) => user.name).join(", ");
 
   return (
     <View style={styles.container}>
@@ -21,6 +26,8 @@ export default function GroupDetails() {
       </Text>
       <Text>{group?.name}</Text>
       <Text>{group?._id}</Text>
+      <Text>Medlemmer:</Text>
+      <Text>{groupUserNames}</Text>
     </View>
   );
 }

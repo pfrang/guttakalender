@@ -1,6 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
+import { Id } from "./_generated/dataModel";
 import {
   internalMutation,
   internalQuery,
@@ -23,6 +24,36 @@ export const getCurrentUser = query({
       throw new Error("Unauthorized");
     }
     return await ctx.db.get("users", userId);
+  },
+});
+
+export const addUserToGroup = mutation({
+  args: {
+    userId: v.id("users"),
+    groupId: v.id("groups"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.userId as Id<"users">, {
+      groups: [
+        ...((await ctx.db.get(args.userId as Id<"users">))?.groups || []),
+        args.groupId,
+      ],
+    });
+  },
+});
+
+export const internalAddGroupToUser = internalMutation({
+  args: {
+    userId: v.id("users"),
+    groupId: v.id("groups"),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    const currentGroups = user?.groups ?? [];
+    if (currentGroups.includes(args.groupId)) return;
+    await ctx.db.patch(args.userId, {
+      groups: [...currentGroups, args.groupId],
+    });
   },
 });
 

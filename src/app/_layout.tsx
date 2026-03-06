@@ -78,7 +78,12 @@ export default function RootLayout() {
         </KeyboardAvoidingView>
       </Unauthenticated>
       <Authenticated>
-        <Stack screenOptions={{ headerShown: true }}>
+        <Stack
+          screenOptions={{
+            headerShown: true,
+            headerBackButtonDisplayMode: "minimal",
+          }}
+        >
           <Stack.Screen
             name="index"
             options={{
@@ -87,9 +92,25 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen
+            name="settings"
+            options={{
+              title: "Instillinger",
+              headerTintColor: "#25292e",
+            }}
+          />
+          <Stack.Screen
             name="AddGroup"
             options={{
               title: "Legg til gruppe",
+              headerTintColor: "#25292e",
+              animation: "slide_from_bottom",
+              presentation: "modal",
+            }}
+          />
+          <Stack.Screen
+            name="JoinGroup"
+            options={{
+              title: "Bli med i gruppe",
               headerTintColor: "#25292e",
               animation: "slide_from_bottom",
               presentation: "modal",
