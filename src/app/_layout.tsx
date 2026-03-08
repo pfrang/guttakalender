@@ -82,27 +82,27 @@ export default function RootLayout() {
           screenOptions={{
             headerShown: true,
             headerBackButtonDisplayMode: "minimal",
+            headerTransparent: true,
+            headerBlurEffect: "prominent", // iOS only
+            headerTintColor: "#25292e",
           }}
         >
           <Stack.Screen
             name="index"
             options={{
               title: "Dine grupper",
-              headerTintColor: "#25292e",
             }}
           />
           <Stack.Screen
             name="settings"
             options={{
               title: "Instillinger",
-              headerTintColor: "#25292e",
             }}
           />
           <Stack.Screen
             name="AddGroup"
             options={{
               title: "Legg til gruppe",
-              headerTintColor: "#25292e",
               animation: "slide_from_bottom",
               presentation: "modal",
             }}
@@ -111,7 +111,6 @@ export default function RootLayout() {
             name="JoinGroup"
             options={{
               title: "Bli med i gruppe",
-              headerTintColor: "#25292e",
               animation: "slide_from_bottom",
               presentation: "modal",
             }}
@@ -120,7 +119,6 @@ export default function RootLayout() {
             name="group/[id]"
             options={{
               headerShown: false,
-              headerTintColor: "#25292e",
             }}
           />
         </Stack>

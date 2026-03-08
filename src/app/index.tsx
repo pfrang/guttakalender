@@ -1,5 +1,6 @@
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/lib/components/Button";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { useQuery } from "convex/react";
 import { Link, useRouter } from "expo-router";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
@@ -9,9 +10,10 @@ import { Group } from "../components/Group";
 export default function Index() {
   const router = useRouter();
   const user = useQuery(api.users.getCurrentUser);
+  const headerHeight = useHeaderHeight();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: headerHeight + 12 }]}>
       <View
         style={{
           justifyContent: "space-between",
