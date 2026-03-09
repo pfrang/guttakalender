@@ -1,15 +1,17 @@
 import { SignInForm } from "@/lib/components/SignInForm";
 import { ConvexAuthProvider, type TokenStorage } from "@convex-dev/auth/react";
+import { HeaderBackButton } from "@react-navigation/elements";
 import {
   Authenticated,
   ConvexReactClient,
   Unauthenticated,
 } from "convex/react";
-import { Stack } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
+import { UI } from "../components/ui";
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!);
 
@@ -57,6 +59,10 @@ export default function RootLayout() {
     void configureNotifications();
   }, []);
 
+  const segments = useSegments() as string[];
+  const isOnPlanScreen = segments.includes("[planId]");
+  const router = useRouter();
+
   return (
     <ConvexAuthProvider client={convex} storage={tokenStorage}>
       <StatusBar style="auto" />
@@ -67,10 +73,7 @@ export default function RootLayout() {
             justifyContent: "center",
             alignItems: "center",
             padding: 20,
-            backgroundColor: "#ffffff",
-            borderRadius: 10,
-            borderWidth: 1,
-            borderColor: "#e0e0e0",
+            backgroundColor: UI.colors.background,
           }}
           behavior="padding"
         >
@@ -83,8 +86,8 @@ export default function RootLayout() {
             headerShown: true,
             headerBackButtonDisplayMode: "minimal",
             headerTransparent: true,
-            headerBlurEffect: "prominent", // iOS only
-            headerTintColor: "#25292e",
+            // headerBlurEffect: "prominent", // iOS only
+            headerTintColor: UI.colors.primary,
           }}
         >
           <Stack.Screen
@@ -118,7 +121,19 @@ export default function RootLayout() {
           <Stack.Screen
             name="group/[id]"
             options={{
-              headerShown: false,
+              headerShown: true,
+              title: isOnPlanScreen ? "Plan" : "",
+              headerTransparent: true,
+              headerTintColor: UI.colors.primary,
+              headerLeft: isOnPlanScreen
+                ? (props) => (
+                    <HeaderBackButton
+                      {...props}
+                      label=""
+                      onPress={() => router.back()}
+                    />
+                  )
+                : undefined,
             }}
           />
         </Stack>

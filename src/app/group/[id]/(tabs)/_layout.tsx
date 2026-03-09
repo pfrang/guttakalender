@@ -1,17 +1,16 @@
 import { CalendarIcon } from "@/lib/icons/Calendar";
 import { ChatBubbleIcon } from "@/lib/icons/ChatBubble";
-import { isMobile } from "@/lib/utils/isMobile";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Tabs } from "expo-router";
 import { NativeTabs } from "expo-router/build/native-tabs";
 
 export default function TabLayout() {
-  return isMobile() ? <MobileLayout /> : <DesktopLayout />;
+  return <MobileLayout />;
 }
 
 function MobileLayout() {
   return (
-    <NativeTabs backgroundColor={"#25292e"}>
+    <NativeTabs>
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Hjem</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={"house"} />
@@ -24,10 +23,6 @@ function MobileLayout() {
         <NativeTabs.Trigger.Label>Planer</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={"calendar"} />
       </NativeTabs.Trigger>
-      {/* <NativeTabs.Trigger name="settings">
-        <NativeTabs.Trigger.Label>Instillinger</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf={"gearshape"} />
-      </NativeTabs.Trigger> */}
     </NativeTabs>
   );
 }

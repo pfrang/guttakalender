@@ -34,6 +34,7 @@ export default function GroupDetails() {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
+    flex: 1,
     gap: 8,
   },
 });

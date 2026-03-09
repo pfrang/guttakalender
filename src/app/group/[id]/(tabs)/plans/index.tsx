@@ -47,7 +47,6 @@ export default function Plans() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
   },
   content: {
     flexGrow: 1,
