@@ -1,12 +1,14 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { formatDateAndTime } from "@/lib/utils/date";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { useQuery } from "convex/react";
 import { useGlobalSearchParams } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
 export default function GroupDetails() {
   const { id } = useGlobalSearchParams<{ id?: string | string[] }>();
+  const headerHeight = useHeaderHeight();
   const groupId = Array.isArray(id) ? id[0] : id;
   const group = useQuery(
     api.groups.getGroupById,
@@ -18,7 +20,7 @@ export default function GroupDetails() {
   const groupUserNames = groupUsers?.map((user) => user.name).join(", ");
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: headerHeight + 12 }]}>
       <Text>
         Opprettet{" "}
         {formatDateAndTime(new Date(group?._creationTime ?? 0), "no", "medium")}

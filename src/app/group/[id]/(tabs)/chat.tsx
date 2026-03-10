@@ -3,6 +3,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/lib/components/Button";
 import { Input } from "@/lib/components/Input";
 import { Ionicons } from "@expo/vector-icons";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { useMutation, useQuery } from "convex/react";
 import Constants from "expo-constants";
 import { useGlobalSearchParams } from "expo-router";
@@ -24,6 +25,7 @@ export default function Chat() {
   const insets = useSafeAreaInsets();
   const { id } = useGlobalSearchParams<{ id?: string | string[] }>();
   const groupId = Array.isArray(id) ? id[0] : id;
+  const headerHeight = useHeaderHeight();
   const messages = useQuery(
     api.chat.getChats,
     groupId ? { groupId: groupId as Id<"groups"> } : "skip",
@@ -184,15 +186,9 @@ export default function Chat() {
     }
   }
 
-  const nativeTabBarHeight = Platform.select({
-    ios: 49,
-    android: 56,
-    default: 0,
-  });
-
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={40}
       enabled
@@ -200,8 +196,11 @@ export default function Chat() {
       <View style={styles.chatArea}>
         <ScrollView
           ref={chatContainerRef}
-          style={styles.chatContainer}
-          contentContainerStyle={styles.chatContent}
+          style={[styles.chatContainer]}
+          contentContainerStyle={[
+            styles.chatContent,
+            { paddingTop: headerHeight + 12 },
+          ]}
           onScroll={handleChatScroll}
           scrollEventThrottle={16}
           keyboardShouldPersistTaps="handled"
@@ -288,7 +287,6 @@ export default function Chat() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
   },
   header: {
     borderBottomWidth: 1,
@@ -303,7 +301,6 @@ const styles = StyleSheet.create({
   },
   chatContainer: {
     flex: 1,
-    backgroundColor: "#F9FAFB",
   },
   chatArea: {
     flex: 1,

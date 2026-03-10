@@ -29,7 +29,7 @@ export default function AddGroup() {
   };
 
   return (
-    <View>
+    <View style={styles.container}>
       <Input label="Gruppenavn" value={groupName} onChangeText={setGroupName} />
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <Button title="Legg til gruppe" onPress={handleSubmit} />
@@ -40,6 +40,7 @@ export default function AddGroup() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 50,
   },
   title: {
     fontSize: 24,

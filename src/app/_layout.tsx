@@ -83,7 +83,6 @@ export default function RootLayout() {
       <Authenticated>
         <Stack
           screenOptions={{
-            headerShown: true,
             headerBackButtonDisplayMode: "minimal",
             headerTransparent: true,
             // headerBlurEffect: "prominent", // iOS only

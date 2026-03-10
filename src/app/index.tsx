@@ -1,6 +1,5 @@
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/lib/components/Button";
-import { useHeaderHeight } from "@react-navigation/elements";
 import { useQuery } from "convex/react";
 import { Link, useRouter } from "expo-router";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
@@ -10,28 +9,26 @@ import { Group } from "../components/Group";
 export default function Index() {
   const router = useRouter();
   const user = useQuery(api.users.getCurrentUser);
-  const headerHeight = useHeaderHeight();
 
   return (
-    <View style={[styles.container, { paddingTop: headerHeight + 12 }]}>
-      <View
-        style={{
-          justifyContent: "space-between",
-          width: "100%",
-          flexDirection: "row",
-          alignItems: "center",
-        }}
-      >
-        <Link href="/JoinGroup" asChild>
-          <Button title="Bli med i gruppe" />
-        </Link>
-        <Link href="/settings" asChild>
-          <Button variant="secondary" title="Instillinger" />
-        </Link>
-      </View>
-      <Text>Dine grupper</Text>
+    <>
       <FlatList
         data={user?.groups ?? []}
+        contentInsetAdjustmentBehavior="automatic"
+        style={{ flex: 1 }}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <View style={styles.buttonRow}>
+              <Link href="/JoinGroup" asChild>
+                <Button title="Bli med i gruppe" />
+              </Link>
+              <Link href="/settings" asChild>
+                <Button variant="secondary" title="Instillinger" />
+              </Link>
+            </View>
+            <Text>Dine grupper</Text>
+          </View>
+        }
         renderItem={({ item }) => (
           <Pressable
             onPress={() =>
@@ -45,24 +42,33 @@ export default function Index() {
           </Pressable>
         )}
         keyExtractor={(item) => item}
-        contentContainerStyle={{
-          gap: 16,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.25,
-          shadowRadius: 3.84,
-          elevation: 5,
-        }}
+        ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+        contentContainerStyle={styles.listContent}
       />
       <AddComponent path="/AddGroup" />
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+  },
+  header: {
     gap: 16,
+    marginBottom: 16,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  listContent: {
+    padding: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 });

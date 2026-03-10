@@ -2,12 +2,14 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { AddComponent } from "@/src/components/Add";
 import { PlansList } from "@/src/components/PlansList";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { useQuery } from "convex/react";
 import { useGlobalSearchParams } from "expo-router";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function Plans() {
   const { id } = useGlobalSearchParams<{ id?: string | string[] }>();
+  const headerHeight = useHeaderHeight();
   const groupId = Array.isArray(id) ? id[0] : id;
   const plans = useQuery(
     api.plans.getPlans,
