@@ -1,19 +1,17 @@
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+import { DataModel, Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/lib/components/Button";
 import { Input } from "@/lib/components/Input";
-import { Ionicons } from "@expo/vector-icons";
+import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useMutation, useQuery } from "convex/react";
-import Constants from "expo-constants";
 import { useGlobalSearchParams } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Animated,
+  FlatList,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -22,7 +20,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChatMessageBubble } from "../../../../components/ChatMessageBubble";
 
 export default function Chat() {
-  const insets = useSafeAreaInsets();
   const { id } = useGlobalSearchParams<{ id?: string | string[] }>();
   const groupId = Array.isArray(id) ? id[0] : id;
   const headerHeight = useHeaderHeight();
@@ -33,111 +30,48 @@ export default function Chat() {
   const users = useQuery(api.users.getUsers);
   const currentUser = useQuery(api.users.getCurrentUser);
   const sendMessage = useMutation(api.chat.addChat);
-  const savePushToken = useMutation(api.users.savePushToken);
+  const chatContainerRef =
+    useRef<FlatList<DataModel["chat"]["document"]>>(null);
+  usePushNotifications();
 
+  const insets = useSafeAreaInsets();
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
-  const chatContainerRef = useRef<ScrollView>(null);
-  const bounceAnim = useRef(new Animated.Value(0)).current;
-  const isAtBottomRef = useRef(true);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
-  const scrollToBottom = (animated: boolean) => {
-    requestAnimationFrame(() => {
-      chatContainerRef.current?.scrollToEnd({ animated });
-    });
-  };
+  function scrollToBottom() {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollToEnd({ animated: true });
+    }
+  }
+  useEffect(() => {
+    setTimeout(() => {
+      scrollToBottom();
+    }, 100);
+  }, [chatContainerRef]);
 
   useEffect(() => {
-    if (messages && messages.length > 0) {
-      scrollToBottom(false);
-    }
-  }, [messages]);
-
-  useEffect(() => {
-    if (!showScrollToBottom) {
-      bounceAnim.stopAnimation();
-      bounceAnim.setValue(0);
-      return;
-    }
-
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(bounceAnim, {
-          toValue: 1,
-          duration: 450,
-          useNativeDriver: true,
-        }),
-        Animated.timing(bounceAnim, {
-          toValue: 0,
-          duration: 450,
-          useNativeDriver: true,
-        }),
-      ]),
+    const showEvent =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const showSub = Keyboard.addListener(showEvent, () =>
+      setKeyboardVisible(true),
     );
-    animation.start();
-
+    const hideSub = Keyboard.addListener(hideEvent, () =>
+      setKeyboardVisible(false),
+    );
     return () => {
-      animation.stop();
+      showSub.remove();
+      hideSub.remove();
     };
-  }, [bounceAnim, showScrollToBottom]);
+  }, []);
 
-  useEffect(() => {
-    if (Platform.OS !== "ios" && Platform.OS !== "android") {
-      return;
-    }
-    if (!currentUser?._id) {
-      return;
-    }
-
-    const registerForPush = async () => {
-      try {
-        const Notifications = await import("expo-notifications");
-
-        if (Platform.OS === "android") {
-          await Notifications.setNotificationChannelAsync("default", {
-            name: "default",
-            importance: Notifications.AndroidImportance.MAX,
-            vibrationPattern: [0, 250, 250, 250],
-            lightColor: "#FFD33D",
-          });
-        }
-
-        const { status: existingStatus } =
-          await Notifications.getPermissionsAsync();
-        let finalStatus = existingStatus;
-
-        if (existingStatus !== "granted") {
-          const permission = await Notifications.requestPermissionsAsync();
-          finalStatus = permission.status;
-        }
-
-        if (finalStatus !== "granted") {
-          return;
-        }
-
-        const projectId =
-          Constants.expoConfig?.extra?.eas?.projectId ??
-          Constants.easConfig?.projectId;
-        if (!projectId) {
-          return;
-        }
-
-        const tokenResult = await Notifications.getExpoPushTokenAsync({
-          projectId,
-        });
-        await savePushToken({
-          token: tokenResult.data,
-          platform: Platform.OS as "ios" | "android",
-        });
-      } catch {
-        // Token registration can fail on unsupported devices/simulators.
-      }
-    };
-
-    void registerForPush();
-  }, [currentUser?._id, savePushToken]);
+  const reversedMessages = useMemo(
+    () => [...(messages ?? [])].reverse(),
+    [messages],
+  );
 
   const handleSend = async () => {
     const trimmed = message.trim();
@@ -168,97 +102,58 @@ export default function Chat() {
     return users?.find((user) => user._id === userId);
   }
 
-  function handleChatScroll(event: {
-    nativeEvent: {
-      contentOffset: { y: number };
-      contentSize: { height: number };
-      layoutMeasurement: { height: number };
-    };
-  }) {
-    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-    const distanceFromBottom =
-      contentSize.height - (contentOffset.y + layoutMeasurement.height);
-    const isAtBottom = distanceFromBottom <= 36;
-
-    if (isAtBottom !== isAtBottomRef.current) {
-      isAtBottomRef.current = isAtBottom;
-      setShowScrollToBottom(!isAtBottom);
-    }
-  }
+  const isLoading =
+    messages === undefined || users === undefined || currentUser === undefined;
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={40}
-      enabled
+      style={styles.container}
     >
-      <View style={styles.chatArea}>
-        <ScrollView
-          ref={chatContainerRef}
-          style={[styles.chatContainer]}
-          contentContainerStyle={[
-            styles.chatContent,
-            { paddingTop: headerHeight + 12 },
-          ]}
-          onScroll={handleChatScroll}
-          scrollEventThrottle={16}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode={
-            Platform.OS === "ios" ? "interactive" : "on-drag"
-          }
-        >
-          {messages === undefined ||
-          users === undefined ||
-          currentUser === undefined ? (
+      <>
+        {isLoading ? (
+          <View style={styles.centeredInfo}>
             <Text style={styles.infoText}>Laster meldinger...</Text>
-          ) : messages.length === 0 ? (
+          </View>
+        ) : messages.length === 0 ? (
+          <View style={styles.centeredInfo}>
             <Text style={styles.infoText}>
               Ingen meldinger enda. Vaer den forste!
             </Text>
-          ) : (
-            messages.map((msg) => {
-              const user = getUserFromId(msg.userId);
-              const isCurrentUser = isChatFromUser(msg.userId);
-
+          </View>
+        ) : (
+          <FlatList
+            data={reversedMessages}
+            style={{ flex: 1, backgroundColor: "#FFFFFF" }}
+            ref={chatContainerRef}
+            inverted
+            automaticallyAdjustKeyboardInsets
+            keyExtractor={(item) => item._id}
+            renderItem={({ item }) => {
+              const user = getUserFromId(item.userId);
+              const isCurrentUser = isChatFromUser(item.userId);
               return (
                 <ChatMessageBubble
-                  key={msg._id}
-                  message={msg}
+                  message={item}
                   userName={user?.name ?? "Ukjent"}
                   isCurrentUser={isCurrentUser}
                   currentUserId={currentUser?._id}
                 />
               );
-            })
-          )}
-        </ScrollView>
-        {showScrollToBottom ? (
-          <Animated.View
-            style={[
-              styles.scrollToBottomWrapper,
-              {
-                transform: [
-                  {
-                    translateY: bounceAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0, 6],
-                    }),
-                  },
-                ],
-              },
+            }}
+            contentContainerStyle={[
+              styles.chatContent,
+              { paddingTop: headerHeight },
             ]}
-          >
-            <Pressable
-              onPress={() => scrollToBottom(true)}
-              style={styles.scrollToBottomButton}
-            >
-              <Ionicons name="chevron-down" size={22} color="#111827" />
-            </Pressable>
-          </Animated.View>
-        ) : null}
-      </View>
-      <View style={[{ paddingBottom: insets.bottom }]}>
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode={
+              Platform.OS === "ios" ? "interactive" : "on-drag"
+            }
+            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+          />
+        )}
+      </>
+      <View style={{ paddingBottom: keyboardVisible ? 0 : insets.bottom }}>
         <View style={styles.form}>
           <Input
             containerStyle={styles.inputContainer}
@@ -277,7 +172,6 @@ export default function Chat() {
             disabled={isSending || message.trim().length === 0}
           />
         </View>
-
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
       </View>
     </KeyboardAvoidingView>
@@ -288,37 +182,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#111827",
-  },
-  chatContainer: {
-    flex: 1,
-  },
   chatArea: {
     flex: 1,
-    position: "relative",
   },
   chatContent: {
     padding: 12,
-    flexGrow: 1,
-    gap: 8,
+  },
+  centeredInfo: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   infoText: {
     fontSize: 14,
     color: "#6B7280",
     textAlign: "center",
-    marginTop: 24,
-  },
-  composerContainer: {
-    backgroundColor: "#FFFFFF",
   },
   form: {
     borderTopWidth: 1,
@@ -351,26 +229,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 12,
-  },
-  scrollToBottomWrapper: {
-    position: "absolute",
-    width: "100%",
-    alignItems: "center",
-    bottom: 16,
-  },
-  scrollToBottomButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 21,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 4,
   },
 });

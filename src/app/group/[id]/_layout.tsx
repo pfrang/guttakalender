@@ -29,7 +29,6 @@ export default function GroupLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          headerTransparent: true,
         }}
       >
         <Stack.Screen
