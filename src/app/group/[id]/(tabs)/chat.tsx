@@ -16,9 +16,11 @@ import {
   KeyboardAvoidingView,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -40,6 +42,13 @@ export default function Chat() {
 
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const bounceAnim = useRef(new Animated.Value(0)).current;
+  const inputRef = useRef<TextInput>(null);
+
+  function focusInput() {
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+  }
 
   useEffect(() => {
     if (showScrollBtn) {
@@ -98,6 +107,7 @@ export default function Chat() {
       );
     } finally {
       setIsSending(false);
+      focusInput();
     }
   };
 
@@ -123,8 +133,7 @@ export default function Chat() {
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
       <KeyboardAvoidingView
-        // behavior={Platform.OS === "ios" ? "padding" : "height"}
-        behavior="padding"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
         // keyboardVerticalOffset accounts for the header so the form
         // doesn't end up behind the nav bar when the keyboard opens
@@ -162,12 +171,12 @@ export default function Chat() {
               scrollIndicatorInsets={{ top: headerHeight }}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
               recycleItems={true}
-              initialScrollIndex={messages.length - 1}
+              initialScrollIndex={messages?.length - 1}
               alignItemsAtEnd // Aligns to the end of the screen, so if there's only a few items there will be enough padding at the top to make them appear to be at the bottom.
               maintainScrollAtEnd // prop will check if you are already scrolled to the bottom when data changes, and if so it keeps you scrolled to the bottom.
               maintainScrollAtEndThreshold={0.5} // prop will check if you are already scrolled to the bottom when data changes, and if so it keeps you scrolled to the bottom.
               maintainVisibleContentPosition //Automatically adjust item positions when items are added/removed/resized above the viewport so that there is no shift in the visible content.
-              estimatedItemSize={100} // estimated height of the item
+              estimatedItemSize={80} // estimated height of the item
               onScroll={handleScroll}
               scrollEventThrottle={100}
             />
@@ -200,6 +209,7 @@ export default function Chat() {
               containerStyle={styles.inputContainer}
               value={message}
               multiline
+              ref={inputRef}
               onChangeText={setMessage}
               placeholder="Send en melding til boaza..."
               editable={!isSending}

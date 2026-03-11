@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { RefObject, useState } from "react";
 import {
   type StyleProp,
   StyleSheet,
@@ -10,12 +10,14 @@ import {
 } from "react-native";
 
 type InputProps = TextInputProps & {
+  ref?: RefObject<TextInput | null>;
   error?: string;
   containerStyle?: StyleProp<ViewStyle>;
   label?: string;
 };
 
 export function Input({
+  ref,
   error,
   style,
   containerStyle,
@@ -28,6 +30,7 @@ export function Input({
     <View style={[styles.wrapper, containerStyle]}>
       {label ? <Text style={styles.label}>{label}</Text> : null}
       <TextInput
+        ref={ref}
         {...props}
         placeholderTextColor="#9CA3AF"
         autoCapitalize={props.autoCapitalize ?? "none"}
