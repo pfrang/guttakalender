@@ -6,23 +6,23 @@ import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useMutation, useQuery } from "convex/react";
 import { useGlobalSearchParams } from "expo-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   FlatList,
-  Keyboard,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { ChatMessageBubble } from "../../../../components/ChatMessageBubble";
 
 export default function Chat() {
   const { id } = useGlobalSearchParams<{ id?: string | string[] }>();
   const groupId = Array.isArray(id) ? id[0] : id;
   const headerHeight = useHeaderHeight();
+
   const messages = useQuery(
     api.chat.getChats,
     groupId ? { groupId: groupId as Id<"groups"> } : "skip",
@@ -30,54 +30,29 @@ export default function Chat() {
   const users = useQuery(api.users.getUsers);
   const currentUser = useQuery(api.users.getCurrentUser);
   const sendMessage = useMutation(api.chat.addChat);
+
   const chatContainerRef =
     useRef<FlatList<DataModel["chat"]["document"]>>(null);
   usePushNotifications();
 
-  const insets = useSafeAreaInsets();
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
-  function scrollToBottom() {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollToEnd({ animated: true });
+  // Scroll to end whenever messages change (new message arrives)
+  useEffect(() => {
+    if (messages && messages.length > 0) {
+      // Small delay lets the list finish rendering before scrolling
+      setTimeout(() => {
+        chatContainerRef.current?.scrollToEnd({ animated: true });
+      }, 100);
     }
-  }
-  useEffect(() => {
-    setTimeout(() => {
-      scrollToBottom();
-    }, 100);
-  }, [chatContainerRef]);
-
-  useEffect(() => {
-    const showEvent =
-      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-    const hideEvent =
-      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
-    const showSub = Keyboard.addListener(showEvent, () =>
-      setKeyboardVisible(true),
-    );
-    const hideSub = Keyboard.addListener(hideEvent, () =>
-      setKeyboardVisible(false),
-    );
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
-
-  const reversedMessages = useMemo(
-    () => [...(messages ?? [])].reverse(),
-    [messages],
-  );
+  }, [chatContainerRef?.current]);
 
   const handleSend = async () => {
     const trimmed = message.trim();
-    if (!trimmed || !groupId) {
-      return;
-    }
+    if (!trimmed || !groupId) return;
+
     setError(null);
     setIsSending(true);
     try {
@@ -106,75 +81,84 @@ export default function Chat() {
     messages === undefined || users === undefined || currentUser === undefined;
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
-    >
-      <>
-        {isLoading ? (
-          <View style={styles.centeredInfo}>
-            <Text style={styles.infoText}>Laster meldinger...</Text>
+    <>
+      <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
+        <KeyboardAvoidingView
+          // behavior={Platform.OS === "ios" ? "padding" : "height"}
+          behavior="padding"
+          style={{ flex: 1 }}
+          // keyboardVerticalOffset accounts for the header so the form
+          // doesn't end up behind the nav bar when the keyboard opens
+          // keyboardVerticalOffset={headerHeight}
+        >
+          {isLoading ? (
+            <View style={styles.centeredInfo}>
+              <Text style={styles.infoText}>Laster meldinger...</Text>
+            </View>
+          ) : messages.length === 0 ? (
+            <View style={styles.centeredInfo}>
+              <Text style={styles.infoText}>
+                Ingen meldinger enda. Vaer den forste!
+              </Text>
+            </View>
+          ) : (
+            <FlatList
+              data={messages} // natural order: oldest at top, newest at bottom
+              ref={chatContainerRef}
+              contentInsetAdjustmentBehavior="automatic"
+              // NO inverted — that was the blur culprit
+              // NO automaticallyAdjustKeyboardInsets — conflicts with KeyboardAvoidingView
+              keyExtractor={(item) => item._id}
+              renderItem={({ item }) => {
+                const user = getUserFromId(item.userId);
+                const isCurrentUser = isChatFromUser(item.userId);
+                return (
+                  <ChatMessageBubble
+                    message={item}
+                    userName={user?.name ?? "Ukjent"}
+                    isCurrentUser={isCurrentUser}
+                    currentUserId={currentUser?._id}
+                  />
+                );
+              }}
+              contentContainerStyle={styles.chatContent}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode={
+                Platform.OS === "ios" ? "interactive" : "on-drag"
+              }
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+              // Keeps the list pinned to the bottom as items are added
+              onContentSizeChange={() =>
+                chatContainerRef.current?.scrollToEnd({ animated: false })
+              }
+            />
+          )}
+
+          <View>
+            <View style={styles.form}>
+              <Input
+                containerStyle={styles.inputContainer}
+                value={message}
+                multiline
+                onChangeText={setMessage}
+                placeholder="Send en melding til boaza..."
+                editable={!isSending}
+                style={styles.input}
+                returnKeyType="send"
+                blurOnSubmit={false}
+                onSubmitEditing={() => void handleSend()}
+              />
+              <Button
+                title={isSending ? "Sender..." : "Send"}
+                onPress={() => void handleSend()}
+                disabled={isSending || message.trim().length === 0}
+              />
+            </View>
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
           </View>
-        ) : messages.length === 0 ? (
-          <View style={styles.centeredInfo}>
-            <Text style={styles.infoText}>
-              Ingen meldinger enda. Vaer den forste!
-            </Text>
-          </View>
-        ) : (
-          <FlatList
-            data={reversedMessages}
-            style={{ flex: 1, backgroundColor: "#FFFFFF" }}
-            ref={chatContainerRef}
-            inverted
-            automaticallyAdjustKeyboardInsets
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => {
-              const user = getUserFromId(item.userId);
-              const isCurrentUser = isChatFromUser(item.userId);
-              return (
-                <ChatMessageBubble
-                  message={item}
-                  userName={user?.name ?? "Ukjent"}
-                  isCurrentUser={isCurrentUser}
-                  currentUserId={currentUser?._id}
-                />
-              );
-            }}
-            contentContainerStyle={[
-              styles.chatContent,
-              { paddingTop: headerHeight },
-            ]}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode={
-              Platform.OS === "ios" ? "interactive" : "on-drag"
-            }
-            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-          />
-        )}
-      </>
-      <View style={{ paddingBottom: keyboardVisible ? 0 : insets.bottom }}>
-        <View style={styles.form}>
-          <Input
-            containerStyle={styles.inputContainer}
-            value={message}
-            onChangeText={setMessage}
-            placeholder="Send en melding til boaza..."
-            editable={!isSending}
-            style={styles.input}
-            returnKeyType="send"
-            blurOnSubmit={false}
-            onSubmitEditing={() => void handleSend()}
-          />
-          <Button
-            title={isSending ? "Sender..." : "Send"}
-            onPress={() => void handleSend()}
-            disabled={isSending || message.trim().length === 0}
-          />
-        </View>
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
-      </View>
-    </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </>
   );
 }
 

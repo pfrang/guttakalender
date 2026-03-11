@@ -1,6 +1,7 @@
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/lib/components/Button";
 import { Input } from "@/lib/components/Input";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { useMutation } from "convex/react";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -8,6 +9,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 export default function JoinGroup() {
   const [groupCode, setGroupCode] = useState("");
+  const headerHeight = useHeaderHeight();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,7 +42,7 @@ export default function JoinGroup() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: headerHeight + 12 }]}>
       <Input
         label="Gruppekode"
         value={groupCode}

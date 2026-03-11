@@ -2,6 +2,7 @@ import { api } from "@/convex/_generated/api";
 import { Button } from "@/lib/components/Button";
 import { Input } from "@/lib/components/Input";
 import { SignOutButton } from "@/lib/components/SignOut";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
@@ -9,6 +10,7 @@ import { FontTest } from "../components/Fonts";
 
 export default function Settings() {
   const user = useQuery(api.users.getCurrentUser);
+  const headerHeight = useHeaderHeight();
   const [editMode, setEditMode] = useState(false);
   const changeUserName = useMutation(api.users.mutateUser);
   const [name, setName] = useState("");
@@ -41,7 +43,7 @@ export default function Settings() {
   const isNameTheSame = name.trim() === user?.name;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: headerHeight + 12 }]}>
       <Text style={styles.title}>Profil</Text>
       <View style={styles.form}>
         {editMode ? (
