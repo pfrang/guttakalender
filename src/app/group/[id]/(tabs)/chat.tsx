@@ -1,16 +1,22 @@
 import { api } from "@/convex/_generated/api";
-import { DataModel, Id } from "@/convex/_generated/dataModel";
+import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/lib/components/Button";
 import { Input } from "@/lib/components/Input";
 import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
+import { Ionicons } from "@expo/vector-icons";
+import { LegendList, LegendListRef } from "@legendapp/list";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useMutation, useQuery } from "convex/react";
 import { useGlobalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
+
 import {
-  FlatList,
+  ActivityIndicator,
+  Animated,
   KeyboardAvoidingView,
-  Platform,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Pressable,
   StyleSheet,
   Text,
   View,
@@ -30,24 +36,50 @@ export default function Chat() {
   const users = useQuery(api.users.getUsers);
   const currentUser = useQuery(api.users.getCurrentUser);
   const sendMessage = useMutation(api.chat.addChat);
+  const chatContainerRef = useRef<LegendListRef>(null);
 
-  const chatContainerRef =
-    useRef<FlatList<DataModel["chat"]["document"]>>(null);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const bounceAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (showScrollBtn) {
+      const loop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(bounceAnim, {
+            toValue: -6,
+            duration: 450,
+            useNativeDriver: true,
+          }),
+          Animated.timing(bounceAnim, {
+            toValue: 0,
+            duration: 450,
+            useNativeDriver: true,
+          }),
+        ]),
+      );
+      loop.start();
+      return () => loop.stop();
+    } else {
+      bounceAnim.setValue(0);
+    }
+  }, [showScrollBtn]);
+
+  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent;
+    const distanceFromBottom =
+      contentSize.height - contentOffset.y - layoutMeasurement.height;
+    setShowScrollBtn(distanceFromBottom > 100);
+  };
+
+  function scrollToBottom() {
+    chatContainerRef.current?.scrollToEnd({ animated: true });
+  }
+
   usePushNotifications();
 
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Scroll to end whenever messages change (new message arrives)
-  useEffect(() => {
-    if (messages && messages.length > 0) {
-      // Small delay lets the list finish rendering before scrolling
-      setTimeout(() => {
-        chatContainerRef.current?.scrollToEnd({ animated: true });
-      }, 100);
-    }
-  }, [chatContainerRef?.current]);
 
   const handleSend = async () => {
     const trimmed = message.trim();
@@ -80,35 +112,35 @@ export default function Chat() {
   const isLoading =
     messages === undefined || users === undefined || currentUser === undefined;
 
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
   return (
-    <>
-      <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
-        <KeyboardAvoidingView
-          // behavior={Platform.OS === "ios" ? "padding" : "height"}
-          behavior="padding"
-          style={{ flex: 1 }}
-          // keyboardVerticalOffset accounts for the header so the form
-          // doesn't end up behind the nav bar when the keyboard opens
-          // keyboardVerticalOffset={headerHeight}
-        >
-          {isLoading ? (
-            <View style={styles.centeredInfo}>
-              <Text style={styles.infoText}>Laster meldinger...</Text>
-            </View>
-          ) : messages.length === 0 ? (
-            <View style={styles.centeredInfo}>
-              <Text style={styles.infoText}>
-                Ingen meldinger enda. Vaer den forste!
-              </Text>
-            </View>
-          ) : (
-            <FlatList
-              data={messages} // natural order: oldest at top, newest at bottom
+    <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
+      <KeyboardAvoidingView
+        // behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior="padding"
+        style={{ flex: 1 }}
+        // keyboardVerticalOffset accounts for the header so the form
+        // doesn't end up behind the nav bar when the keyboard opens
+        // keyboardVerticalOffset={headerHeight}
+      >
+        {messages.length === 0 ? (
+          <View style={styles.centeredInfo}>
+            <Text style={styles.infoText}>
+              Ingen meldinger enda. Vaer den forste!
+            </Text>
+          </View>
+        ) : (
+          <>
+            <LegendList
               ref={chatContainerRef}
-              contentInsetAdjustmentBehavior="automatic"
-              // NO inverted — that was the blur culprit
-              // NO automaticallyAdjustKeyboardInsets — conflicts with KeyboardAvoidingView
-              keyExtractor={(item) => item._id}
+              data={messages}
               renderItem={({ item }) => {
                 const user = getUserFromId(item.userId);
                 const isCurrentUser = isChatFromUser(item.userId);
@@ -121,44 +153,71 @@ export default function Chat() {
                   />
                 );
               }}
-              contentContainerStyle={styles.chatContent}
-              keyboardShouldPersistTaps="handled"
-              keyboardDismissMode={
-                Platform.OS === "ios" ? "interactive" : "on-drag"
-              }
+              keyExtractor={(item) => item._id}
+              contentContainerStyle={{
+                paddingTop: headerHeight + 10,
+                paddingHorizontal: 10,
+                paddingBottom: 10,
+              }}
+              scrollIndicatorInsets={{ top: headerHeight }}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-              // Keeps the list pinned to the bottom as items are added
-              onContentSizeChange={() =>
-                chatContainerRef.current?.scrollToEnd({ animated: false })
-              }
+              recycleItems={true}
+              initialScrollIndex={messages.length - 1}
+              alignItemsAtEnd // Aligns to the end of the screen, so if there's only a few items there will be enough padding at the top to make them appear to be at the bottom.
+              maintainScrollAtEnd // prop will check if you are already scrolled to the bottom when data changes, and if so it keeps you scrolled to the bottom.
+              maintainScrollAtEndThreshold={0.5} // prop will check if you are already scrolled to the bottom when data changes, and if so it keeps you scrolled to the bottom.
+              maintainVisibleContentPosition //Automatically adjust item positions when items are added/removed/resized above the viewport so that there is no shift in the visible content.
+              estimatedItemSize={100} // estimated height of the item
+              onScroll={handleScroll}
+              scrollEventThrottle={100}
             />
-          )}
 
-          <View>
-            <View style={styles.form}>
-              <Input
-                containerStyle={styles.inputContainer}
-                value={message}
-                multiline
-                onChangeText={setMessage}
-                placeholder="Send en melding til boaza..."
-                editable={!isSending}
-                style={styles.input}
-                returnKeyType="send"
-                blurOnSubmit={false}
-                onSubmitEditing={() => void handleSend()}
-              />
-              <Button
-                title={isSending ? "Sender..." : "Send"}
-                onPress={() => void handleSend()}
-                disabled={isSending || message.trim().length === 0}
-              />
-            </View>
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            {showScrollBtn && (
+              <Animated.View
+                style={[
+                  styles.scrollBtnWrapper,
+                  { transform: [{ translateY: bounceAnim }] },
+                ]}
+                pointerEvents="box-none"
+              >
+                <Pressable
+                  onPress={scrollToBottom}
+                  style={({ pressed }) => [
+                    styles.scrollBtn,
+                    pressed && { opacity: 0.7 },
+                  ]}
+                >
+                  <Ionicons name="chevron-down" size={18} color="#fff" />
+                </Pressable>
+              </Animated.View>
+            )}
+          </>
+        )}
+
+        <View>
+          <View style={styles.form}>
+            <Input
+              containerStyle={styles.inputContainer}
+              value={message}
+              multiline
+              onChangeText={setMessage}
+              placeholder="Send en melding til boaza..."
+              editable={!isSending}
+              style={styles.input}
+              returnKeyType="send"
+              blurOnSubmit={false}
+              onSubmitEditing={() => void handleSend()}
+            />
+            <Button
+              title={isSending ? "Sender..." : "Send"}
+              onPress={() => void handleSend()}
+              disabled={isSending || message.trim().length === 0}
+            />
           </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </>
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -213,5 +272,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 12,
+  },
+  scrollBtnWrapper: {
+    position: "absolute",
+    bottom: 12,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    pointerEvents: "box-none",
+  },
+  scrollBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: "#6B7280",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
   },
 });
