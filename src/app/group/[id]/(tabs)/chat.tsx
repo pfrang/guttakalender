@@ -137,7 +137,7 @@ export default function Chat() {
             </Text>
           </View>
         ) : (
-          <>
+          <View style={{ flex: 1 }}>
             <LegendList
               ref={chatContainerRef}
               data={messages}
@@ -191,7 +191,7 @@ export default function Chat() {
                 </Pressable>
               </Animated.View>
             )}
-          </>
+          </View>
         )}
 
         <View>
