@@ -2,6 +2,7 @@ import { api } from "@/convex/_generated/api";
 import { Button } from "@/lib/components/Button";
 import { Input } from "@/lib/components/Input";
 import { Text } from "@/lib/components/Text";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { useMutation } from "convex/react";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -11,6 +12,7 @@ export default function AddGroup() {
   const [groupName, setGroupName] = useState("");
   const addGroup = useMutation(api.groups.addGroup);
   const [error, setError] = useState<string | null>(null);
+  const headerHeight = useHeaderHeight();
   const router = useRouter();
 
   const handleSubmit = async () => {
@@ -29,7 +31,7 @@ export default function AddGroup() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: headerHeight + 12 }]}>
       <Input label="Gruppenavn" value={groupName} onChangeText={setGroupName} />
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <Button title="Legg til gruppe" onPress={handleSubmit} />
@@ -41,6 +43,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 50,
+    padding: 16,
+    gap: 8,
   },
   title: {
     fontSize: 24,
