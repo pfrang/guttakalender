@@ -139,69 +139,68 @@ export default function Chat() {
         // doesn't end up behind the nav bar when the keyboard opens
         // keyboardVerticalOffset={headerHeight}
       >
-        {messages.length === 0 ? (
-          <View style={styles.centeredInfo}>
-            <Text style={styles.infoText}>
-              Ingen meldinger enda. Vaer den forste!
-            </Text>
-          </View>
-        ) : (
-          <View style={{ flex: 1 }}>
-            <LegendList
-              ref={chatContainerRef}
-              data={messages}
-              renderItem={({ item }) => {
-                const user = getUserFromId(item.userId);
-                const isCurrentUser = isChatFromUser(item.userId);
-                return (
-                  <ChatMessageBubble
-                    message={item}
-                    userName={user?.name ?? "Ukjent"}
-                    isCurrentUser={isCurrentUser}
-                    currentUserId={currentUser?._id}
-                  />
-                );
-              }}
-              keyExtractor={(item) => item._id}
-              contentContainerStyle={{
-                paddingTop: headerHeight + 10,
-                paddingHorizontal: 10,
-                paddingBottom: 10,
-              }}
-              scrollIndicatorInsets={{ top: headerHeight }}
-              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-              recycleItems={true}
-              initialScrollIndex={messages?.length - 1}
-              alignItemsAtEnd // Aligns to the end of the screen, so if there's only a few items there will be enough padding at the top to make them appear to be at the bottom.
-              maintainScrollAtEnd // prop will check if you are already scrolled to the bottom when data changes, and if so it keeps you scrolled to the bottom.
-              maintainScrollAtEndThreshold={0.5} // prop will check if you are already scrolled to the bottom when data changes, and if so it keeps you scrolled to the bottom.
-              maintainVisibleContentPosition //Automatically adjust item positions when items are added/removed/resized above the viewport so that there is no shift in the visible content.
-              estimatedItemSize={80} // estimated height of the item
-              onScroll={handleScroll}
-              scrollEventThrottle={100}
-            />
+        <View style={{ flex: 1 }}>
+          <LegendList
+            ref={chatContainerRef}
+            data={messages}
+            renderItem={({ item }) => {
+              const user = getUserFromId(item.userId);
+              const isCurrentUser = isChatFromUser(item.userId);
+              return (
+                <ChatMessageBubble
+                  message={item}
+                  userName={user?.name ?? "Ukjent"}
+                  isCurrentUser={isCurrentUser}
+                  currentUserId={currentUser?._id}
+                />
+              );
+            }}
+            keyExtractor={(item) => item._id}
+            contentContainerStyle={{
+              paddingTop: headerHeight + 10,
+              paddingHorizontal: 10,
+              paddingBottom: 10,
+            }}
+            scrollIndicatorInsets={{ top: headerHeight }}
+            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            recycleItems={true}
+            initialScrollIndex={messages?.length - 1}
+            alignItemsAtEnd // Aligns to the end of the screen, so if there's only a few items there will be enough padding at the top to make them appear to be at the bottom.
+            maintainScrollAtEnd // prop will check if you are already scrolled to the bottom when data changes, and if so it keeps you scrolled to the bottom.
+            maintainScrollAtEndThreshold={0.5} // prop will check if you are already scrolled to the bottom when data changes, and if so it keeps you scrolled to the bottom.
+            maintainVisibleContentPosition //Automatically adjust item positions when items are added/removed/resized above the viewport so that there is no shift in the visible content.
+            estimatedItemSize={60} // estimated height of the item
+            onScroll={handleScroll}
+            scrollEventThrottle={100}
+            ListEmptyComponent={
+              <View style={styles.centeredInfo}>
+                <Text style={styles.infoText}>
+                  Ingen meldinger enda. Vær den forste!
+                </Text>
+              </View>
+            }
+          />
 
-            {showScrollBtn && (
-              <Animated.View
-                style={[
-                  styles.scrollBtnWrapper,
-                  { transform: [{ translateY: bounceAnim }] },
+          {showScrollBtn && (
+            <Animated.View
+              style={[
+                styles.scrollBtnWrapper,
+                { transform: [{ translateY: bounceAnim }] },
+              ]}
+              pointerEvents="box-none"
+            >
+              <Pressable
+                onPress={scrollToBottom}
+                style={({ pressed }) => [
+                  styles.scrollBtn,
+                  pressed && { opacity: 0.7 },
                 ]}
-                pointerEvents="box-none"
               >
-                <Pressable
-                  onPress={scrollToBottom}
-                  style={({ pressed }) => [
-                    styles.scrollBtn,
-                    pressed && { opacity: 0.7 },
-                  ]}
-                >
-                  <Ionicons name="chevron-down" size={18} color="#fff" />
-                </Pressable>
-              </Animated.View>
-            )}
-          </View>
-        )}
+                <Ionicons name="chevron-down" size={18} color="#fff" />
+              </Pressable>
+            </Animated.View>
+          )}
+        </View>
 
         <View>
           <View style={styles.form}>

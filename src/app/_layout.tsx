@@ -120,10 +120,7 @@ export default function RootLayout() {
           <Stack.Screen
             name="group/[id]"
             options={{
-              headerShown: true,
               title: isOnPlanScreen ? "Plan" : "",
-              headerTransparent: true,
-              headerTintColor: UI.colors.primary,
               headerLeft: isOnPlanScreen
                 ? (props) => (
                     <HeaderBackButton
