@@ -13,11 +13,10 @@ import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
-  KeyboardAvoidingView,
   NativeScrollEvent,
   NativeSyntheticEvent,
-  Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -132,12 +131,14 @@ export default function Chat() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-        // keyboardVerticalOffset accounts for the header so the form
-        // doesn't end up behind the nav bar when the keyboard opens
-        // keyboardVerticalOffset={headerHeight}
+      {/* <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}> */}
+      <ScrollView
+        automaticallyAdjustKeyboardInsets={true}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        contentContainerStyle={{
+          flex: 1,
+        }}
       >
         <View style={{ flex: 1 }}>
           <LegendList
@@ -202,30 +203,29 @@ export default function Chat() {
           )}
         </View>
 
-        <View>
-          <View style={styles.form}>
-            <Input
-              containerStyle={styles.inputContainer}
-              value={message}
-              multiline
-              ref={inputRef}
-              onChangeText={setMessage}
-              placeholder="Send en melding til boaza..."
-              editable={!isSending}
-              style={styles.input}
-              returnKeyType="send"
-              blurOnSubmit={false}
-              onSubmitEditing={() => void handleSend()}
-            />
-            <Button
-              title={isSending ? "Sender..." : "Send"}
-              onPress={() => void handleSend()}
-              disabled={isSending || message.trim().length === 0}
-            />
-          </View>
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        <View style={styles.form}>
+          <Input
+            containerStyle={styles.inputContainer}
+            value={message}
+            multiline
+            ref={inputRef}
+            onChangeText={setMessage}
+            placeholder="Send en melding til boaza..."
+            editable={!isSending}
+            style={styles.input}
+            returnKeyType="send"
+            blurOnSubmit={false}
+            onSubmitEditing={() => void handleSend()}
+          />
+          <Button
+            title={isSending ? "Sender..." : "Send"}
+            onPress={() => void handleSend()}
+            disabled={isSending || message.trim().length === 0}
+          />
         </View>
-      </KeyboardAvoidingView>
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      </ScrollView>
+      {/* </KeyboardAvoidingView> */}
     </SafeAreaView>
   );
 }
