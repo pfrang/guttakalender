@@ -13,10 +13,10 @@ import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
+  KeyboardAvoidingView,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -131,15 +131,13 @@ export default function Chat() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
-      {/* <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}> */}
-      <ScrollView
+      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+        {/* <ScrollView
         automaticallyAdjustKeyboardInsets={true}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="interactive"
-        contentContainerStyle={{
-          flex: 1,
-        }}
-      >
+        // keyboardShouldPersistTaps="handled"
+        // keyboardDismissMode="interactive"
+        contentContainerStyle={{ flex: 1 }}
+      > */}
         <View style={{ flex: 1 }}>
           <LegendList
             ref={chatContainerRef}
@@ -224,8 +222,8 @@ export default function Chat() {
           />
         </View>
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
-      </ScrollView>
-      {/* </KeyboardAvoidingView> */}
+        {/* </ScrollView> */}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
