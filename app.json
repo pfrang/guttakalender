@@ -10,7 +10,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.peff.guttakalender",
-      "icon": "./assets/GuttaIkon.icon"
+      "icon": "./assets/GuttaIkon.icon",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {

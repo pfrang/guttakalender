@@ -20,7 +20,6 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -42,13 +41,6 @@ export default function Chat() {
 
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const bounceAnim = useRef(new Animated.Value(0)).current;
-  const inputRef = useRef<TextInput>(null);
-
-  function focusInput() {
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 100);
-  }
 
   useEffect(() => {
     if (showScrollBtn) {
@@ -107,7 +99,6 @@ export default function Chat() {
       );
     } finally {
       setIsSending(false);
-      focusInput();
     }
   };
 
@@ -210,7 +201,6 @@ export default function Chat() {
             containerStyle={styles.inputContainer}
             value={message}
             multiline
-            ref={inputRef}
             onChangeText={setMessage}
             placeholder="Send en melding til boaza..."
             editable={!isSending}
