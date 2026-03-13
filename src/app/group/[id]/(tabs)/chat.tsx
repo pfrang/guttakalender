@@ -16,6 +16,7 @@ import {
   KeyboardAvoidingView,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -131,7 +132,10 @@ export default function Chat() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
-      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
         {/* <ScrollView
         automaticallyAdjustKeyboardInsets={true}
         // keyboardShouldPersistTaps="handled"
