@@ -3,6 +3,9 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
+import { ConvexHttpClient } from "convex/browser";
+
+export const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export const getGroupsForUser = query({
   args: {

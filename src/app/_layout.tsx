@@ -39,13 +39,20 @@ const nativeStorage: TokenStorage = {
 const tokenStorage = Platform.OS === "web" ? webStorage : nativeStorage;
 
 export default function RootLayout() {
+  const router = useRouter();
+  const segments = useSegments() as string[];
+  const isOnPlanScreen = segments.includes("[planId]");
+
   useEffect(() => {
     if (Platform.OS !== "ios" && Platform.OS !== "android") {
       return;
     }
 
+    let cleanup: (() => void) | undefined;
+
     const configureNotifications = async () => {
       const Notifications = await import("expo-notifications");
+
       Notifications.setNotificationHandler({
         handleNotification: async () => ({
           shouldShowBanner: true,
@@ -54,14 +61,30 @@ export default function RootLayout() {
           shouldSetBadge: false,
         }),
       });
+
+      // Navigate to group chat when user taps a notification (app open/backgrounded)
+      const subscription = Notifications.addNotificationResponseReceivedListener(
+        (response) => {
+          const route = response.notification.request.content.data
+            ?.route as string | undefined;
+          if (route) router.push(route as never);
+        },
+      );
+
+      // Navigate when app was fully killed and launched via notification tap
+      const lastResponse =
+        await Notifications.getLastNotificationResponseAsync();
+      const coldRoute = lastResponse?.notification.request.content.data
+        ?.route as string | undefined;
+      if (coldRoute) router.push(coldRoute as never);
+
+      cleanup = () => subscription.remove();
     };
 
     void configureNotifications();
-  }, []);
 
-  const segments = useSegments() as string[];
-  const isOnPlanScreen = segments.includes("[planId]");
-  const router = useRouter();
+    return () => cleanup?.();
+  }, []);
 
   return (
     <ConvexAuthProvider client={convex} storage={tokenStorage}>

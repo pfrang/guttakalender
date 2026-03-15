@@ -1,6 +1,8 @@
 import { v } from "convex/values";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import { internalAction } from "./_generated/server";
+import { convex, getGroupById } from "./groups";
+import http from "./http";
 
 type ExpoPushMessage = {
   to: string;
@@ -27,9 +29,10 @@ export const sendChatNotifications = internalAction({
   },
   handler: async (ctx, args) => {
     const recipients = await ctx.runQuery(
-      internal.users.getPushTokensExcludingUser,
+      internal.users.getPushTokensForGroup,
       {
-        userId: args.senderUserId,
+        groupId: args.groupId,
+        senderUserId: args.senderUserId,
       },
     );
 
@@ -40,10 +43,14 @@ export const sendChatNotifications = internalAction({
       return;
     }
 
+    const group = await convex.query(api.groups.getGroupById, {
+      id: args.groupId,
+    });
+
     const payload: ExpoPushMessage[] = uniqueTokens.map((token) => ({
       to: token,
       sound: "default",
-      title: "Ny melding",
+      title: group?.name ? "Ny melding i " + group.name : "Ny melding",
       body: `${args.senderName}: ${args.message}`,
       data: { route: `/group/${args.groupId}/(tabs)` },
     }));

@@ -107,13 +107,27 @@ export const savePushToken = mutation({
   },
 });
 
-export const getPushTokensExcludingUser = internalQuery({
+export const getPushTokensForGroup = internalQuery({
   args: {
-    userId: v.string(),
+    groupId: v.id("groups"),
+    senderUserId: v.string(),
   },
   handler: async (ctx, args) => {
-    const tokens = await ctx.db.query("pushTokens").collect();
-    return tokens.filter((item) => item.userId !== args.userId);
+    const group = await ctx.db.get(args.groupId);
+    const memberIds = (group?.users ?? []).filter(
+      (id) => id !== args.senderUserId,
+    );
+    if (memberIds.length === 0) return [];
+
+    const tokens = await Promise.all(
+      memberIds.map((userId) =>
+        ctx.db
+          .query("pushTokens")
+          .withIndex("by_userId", (q) => q.eq("userId", userId))
+          .collect(),
+      ),
+    );
+    return tokens.flat();
   },
 });
 
