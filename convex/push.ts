@@ -1,8 +1,6 @@
 import { v } from "convex/values";
 import { api, internal } from "./_generated/api";
 import { internalAction } from "./_generated/server";
-import { convex, getGroupById } from "./groups";
-import http from "./http";
 
 type ExpoPushMessage = {
   to: string;
@@ -43,7 +41,7 @@ export const sendChatNotifications = internalAction({
       return;
     }
 
-    const group = await convex.query(api.groups.getGroupById, {
+    const group = await ctx.runQuery(api.groups.getGroupById, {
       id: args.groupId,
     });
 
