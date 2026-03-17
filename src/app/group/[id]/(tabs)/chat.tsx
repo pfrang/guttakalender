@@ -10,6 +10,7 @@ import { useMutation, useQuery } from "convex/react";
 import { useGlobalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 
+import { ChatMessageBubble } from "@/src/components/ChatMessageBubble";
 import {
   ActivityIndicator,
   Animated,
@@ -23,7 +24,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ChatMessageBubble } from "../../../../components/ChatMessageBubble";
 
 export default function Chat() {
   const { id } = useGlobalSearchParams<{ id?: string | string[] }>();

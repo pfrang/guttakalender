@@ -5,13 +5,27 @@ import {
   Authenticated,
   ConvexReactClient,
   Unauthenticated,
+  useConvexAuth,
 } from "convex/react";
+import * as Notifications from "expo-notifications";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SecureStore from "expo-secure-store";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
 import { UI } from "../components/ui";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
+SplashScreen.preventAutoHideAsync();
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!);
 
@@ -38,34 +52,22 @@ const nativeStorage: TokenStorage = {
 
 const tokenStorage = Platform.OS === "web" ? webStorage : nativeStorage;
 
-export default function RootLayout() {
+function RootLayoutInner() {
+  const { isLoading } = useConvexAuth();
+
   useEffect(() => {
-    if (Platform.OS !== "ios" && Platform.OS !== "android") {
-      return;
+    if (!isLoading) {
+      SplashScreen.hideAsync();
     }
-
-    const configureNotifications = async () => {
-      const Notifications = await import("expo-notifications");
-      Notifications.setNotificationHandler({
-        handleNotification: async () => ({
-          shouldShowBanner: true,
-          shouldShowList: true,
-          shouldPlaySound: true,
-          shouldSetBadge: false,
-        }),
-      });
-    };
-
-    void configureNotifications();
-  }, []);
+  }, [isLoading]);
 
   const segments = useSegments() as string[];
   const isOnPlanScreen = segments.includes("[planId]");
   const router = useRouter();
 
   return (
-    <ConvexAuthProvider client={convex} storage={tokenStorage}>
-      <StatusBar style="auto" />
+    <>
+      <StatusBar style="dark" />
       <Unauthenticated>
         <KeyboardAvoidingView
           style={{
@@ -85,22 +87,11 @@ export default function RootLayout() {
           screenOptions={{
             headerBackButtonDisplayMode: "minimal",
             headerTransparent: true,
-            // headerBlurEffect: "prominent", // iOS only
             headerTintColor: UI.colors.primary,
           }}
         >
-          <Stack.Screen
-            name="index"
-            options={{
-              title: "Dine grupper",
-            }}
-          />
-          <Stack.Screen
-            name="settings"
-            options={{
-              title: "Instillinger",
-            }}
-          />
+          <Stack.Screen name="index" options={{ title: "Dine grupper" }} />
+          <Stack.Screen name="settings" options={{ title: "Instillinger" }} />
           <Stack.Screen
             name="AddGroup"
             options={{
@@ -134,6 +125,14 @@ export default function RootLayout() {
           />
         </Stack>
       </Authenticated>
+    </>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ConvexAuthProvider client={convex} storage={tokenStorage}>
+      <RootLayoutInner />
     </ConvexAuthProvider>
   );
 }

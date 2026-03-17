@@ -34,7 +34,7 @@ export default defineSchema({
     .index("by_groupId", ["groupId"]),
   chat: defineTable({
     message: v.string(),
-    userId: v.string(),
+    userId: v.id("users"),
     groupId: v.id("groups"),
     reactions: v.optional(
       v.array(
@@ -46,7 +46,7 @@ export default defineSchema({
     ),
   }).index("by_groupId", ["groupId"]),
   pushTokens: defineTable({
-    userId: v.string(),
+    userId: v.id("users"),
     token: v.string(),
     platform: v.union(v.literal("ios"), v.literal("android")),
     updatedAt: v.number(),

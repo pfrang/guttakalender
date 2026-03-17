@@ -3,7 +3,6 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
-import { ConvexHttpClient } from "convex/browser";
 
 export const getGroupsForUser = query({
   args: {
@@ -15,10 +14,8 @@ export const getGroupsForUser = query({
       throw new Error("Unauthorized");
     }
 
-    return await ctx.db
-      .query("groups")
-      .filter((q) => q.eq(q.field("users"), [userId]))
-      .collect();
+    const allGroups = await ctx.db.query("groups").collect();
+    return allGroups.filter((group) => group.users?.includes(userId));
   },
 });
 

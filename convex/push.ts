@@ -20,7 +20,7 @@ function chunkMessages<T>(items: T[], size: number): T[][] {
 
 export const sendChatNotifications = internalAction({
   args: {
-    senderUserId: v.string(),
+    senderUserId: v.id("users"),
     message: v.string(),
     senderName: v.string(),
     groupId: v.id("groups"),
@@ -50,7 +50,7 @@ export const sendChatNotifications = internalAction({
       sound: "default",
       title: group?.name ? "Ny melding i " + group.name : "Ny melding",
       body: `${args.senderName}: ${args.message}`,
-      data: { route: `/group/${args.groupId}/(tabs)` },
+      data: { url: `/group/${args.groupId}/(tabs)/chat` },
     }));
 
     const chunks = chunkMessages(payload, 100);

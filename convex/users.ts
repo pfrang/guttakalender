@@ -110,7 +110,7 @@ export const savePushToken = mutation({
 export const getPushTokensForGroup = internalQuery({
   args: {
     groupId: v.id("groups"),
-    senderUserId: v.string(),
+    senderUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
     const group = await ctx.db.get(args.groupId);
