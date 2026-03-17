@@ -50,7 +50,7 @@ export const sendChatNotifications = internalAction({
       sound: "default",
       title: group?.name ? "Ny melding i " + group.name : "Ny melding",
       body: `${args.senderName}: ${args.message}`,
-      data: { url: `/group/${args.groupId}/(tabs)/chat` },
+      data: { url: `/group/${args.groupId}/chat` },
     }));
 
     const chunks = chunkMessages(payload, 100);
