@@ -6,13 +6,18 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "ios": { "bundleIdentifier": "com.peff.guttakalender.dev" },
+      "android": { "applicationId": "com.peff.guttakalender.dev" }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "ios": { "bundleIdentifier": "com.peff.guttakalender.preview" },
+      "android": { "applicationId": "com.peff.guttakalender.preview" }
     },
     "production": {
-      "autoIncrement": true
+      "ios": { "bundleIdentifier": "com.peff.guttakalender" },
+      "android": { "applicationId": "com.peff.guttakalender" }
     }
   },
   "submit": {

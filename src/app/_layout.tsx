@@ -88,6 +88,8 @@ function RootLayoutInner() {
     }
   }, [isLoading]);
 
+  useEffect;
+
   const segments = useSegments() as string[];
   const isOnPlanScreen = segments.includes("[planId]");
   const router = useRouter();
