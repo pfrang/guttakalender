@@ -16,8 +16,10 @@ import { useEffect } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
 import { UI } from "../components/ui";
 
-function useNotificationObserver() {
+function useNotificationObserver(isReady: boolean) {
   useEffect(() => {
+    if (!isReady) return;
+
     function redirect(notification: Notifications.Notification) {
       const url = notification.request.content.data?.url;
       if (typeof url === "string") {
@@ -39,7 +41,7 @@ function useNotificationObserver() {
     return () => {
       subscription.remove();
     };
-  }, []);
+  }, [isReady]);
 }
 
 Notifications.setNotificationHandler({
@@ -79,16 +81,14 @@ const nativeStorage: TokenStorage = {
 const tokenStorage = Platform.OS === "web" ? webStorage : nativeStorage;
 
 function RootLayoutInner() {
-  useNotificationObserver();
   const { isLoading } = useConvexAuth();
+  useNotificationObserver(!isLoading);
 
   useEffect(() => {
     if (!isLoading) {
       SplashScreen.hideAsync();
     }
   }, [isLoading]);
-
-  useEffect;
 
   const segments = useSegments() as string[];
   const isOnPlanScreen = segments.includes("[planId]");
