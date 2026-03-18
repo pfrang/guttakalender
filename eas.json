@@ -7,17 +7,21 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "ios": { "bundleIdentifier": "com.peff.guttakalender.dev" },
-      "android": { "applicationId": "com.peff.guttakalender.dev" }
+      "env": {
+        "APP_VARIANT": "development"
+      }
+    },
+    "ios-simulator": {
+      "extends": "development",
+      "ios": {
+        "simulator": true
+      }
     },
     "preview": {
       "distribution": "internal",
-      "ios": { "bundleIdentifier": "com.peff.guttakalender.preview" },
-      "android": { "applicationId": "com.peff.guttakalender.preview" }
-    },
-    "production": {
-      "ios": { "bundleIdentifier": "com.peff.guttakalender" },
-      "android": { "applicationId": "com.peff.guttakalender" }
+      "env": {
+        "APP_VARIANT": "preview"
+      }
     }
   },
   "submit": {
