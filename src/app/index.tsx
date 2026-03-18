@@ -1,5 +1,6 @@
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/lib/components/Button";
+import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
 import { useQuery } from "convex/react";
 import { Link, useRouter } from "expo-router";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
@@ -9,6 +10,7 @@ import { Group } from "../components/Group";
 export default function Index() {
   const router = useRouter();
   const user = useQuery(api.users.getCurrentUser);
+  usePushNotifications();
 
   return (
     <>

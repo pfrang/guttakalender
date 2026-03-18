@@ -2,7 +2,6 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/lib/components/Button";
 import { Input } from "@/lib/components/Input";
-import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
 import { Ionicons } from "@expo/vector-icons";
 import { LegendList, LegendListRef } from "@legendapp/list";
 import { useHeaderHeight } from "@react-navigation/elements";
@@ -75,8 +74,6 @@ export default function Chat() {
   function scrollToBottom() {
     chatContainerRef.current?.scrollToEnd({ animated: true });
   }
-
-  usePushNotifications();
 
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
