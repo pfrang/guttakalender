@@ -14,6 +14,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { UI } from "../components/ui";
 
 function useNotificationObserver(isReady: boolean) {
@@ -95,7 +96,7 @@ function RootLayoutInner() {
   const router = useRouter();
 
   return (
-    <>
+    <KeyboardProvider>
       <StatusBar style="dark" />
       <Unauthenticated>
         <KeyboardAvoidingView
@@ -154,7 +155,7 @@ function RootLayoutInner() {
           />
         </Stack>
       </Authenticated>
-    </>
+    </KeyboardProvider>
   );
 }
 

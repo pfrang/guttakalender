@@ -9,25 +9,47 @@ import { useMutation, useQuery } from "convex/react";
 import { useGlobalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 
+import { useGradualAnimation } from "@/lib/hooks/useGradualAnimation";
 import { ChatMessageBubble } from "@/src/components/ChatMessageBubble";
 import {
   ActivityIndicator,
-  Animated,
-  KeyboardAvoidingView,
+  Keyboard,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
   Pressable,
+  Animated as RNAnimated,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, { useAnimatedStyle } from "react-native-reanimated";
 
 export default function Chat() {
   const { id } = useGlobalSearchParams<{ id?: string | string[] }>();
   const groupId = Array.isArray(id) ? id[0] : id;
   const headerHeight = useHeaderHeight();
+
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showEvent =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+
+    const showSub = Keyboard.addListener(showEvent, () =>
+      setKeyboardVisible(true),
+    );
+    const hideSub = Keyboard.addListener(hideEvent, () =>
+      setKeyboardVisible(false),
+    );
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const messages = useQuery(
     api.chat.getChats,
@@ -39,18 +61,18 @@ export default function Chat() {
   const chatContainerRef = useRef<LegendListRef>(null);
 
   const [showScrollBtn, setShowScrollBtn] = useState(false);
-  const bounceAnim = useRef(new Animated.Value(0)).current;
+  const bounceAnim = useRef(new RNAnimated.Value(0)).current;
 
   useEffect(() => {
     if (showScrollBtn) {
-      const loop = Animated.loop(
-        Animated.sequence([
-          Animated.timing(bounceAnim, {
+      const loop = RNAnimated.loop(
+        RNAnimated.sequence([
+          RNAnimated.timing(bounceAnim, {
             toValue: -6,
             duration: 450,
             useNativeDriver: true,
           }),
-          Animated.timing(bounceAnim, {
+          RNAnimated.timing(bounceAnim, {
             toValue: 0,
             duration: 450,
             useNativeDriver: true,
@@ -110,6 +132,14 @@ export default function Chat() {
   const isLoading =
     messages === undefined || users === undefined || currentUser === undefined;
 
+  const { height } = useGradualAnimation();
+
+  const keyboardPadding = useAnimatedStyle(() => {
+    return {
+      height: height.value,
+    };
+  }, []);
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -119,103 +149,103 @@ export default function Chat() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
-        {/* <ScrollView
+    <View style={{ flex: 1 }}>
+      {/* <ScrollView
         automaticallyAdjustKeyboardInsets={true}
         // keyboardShouldPersistTaps="handled"
         // keyboardDismissMode="interactive"
         contentContainerStyle={{ flex: 1 }}
       > */}
-        <View style={{ flex: 1 }}>
-          <LegendList
-            ref={chatContainerRef}
-            data={messages}
-            renderItem={({ item }) => {
-              const user = getUserFromId(item.userId);
-              const isCurrentUser = isChatFromUser(item.userId);
-              return (
-                <ChatMessageBubble
-                  message={item}
-                  userName={user?.name ?? "Ukjent"}
-                  isCurrentUser={isCurrentUser}
-                  currentUserId={currentUser?._id}
-                />
-              );
-            }}
-            keyExtractor={(item) => item._id}
-            contentContainerStyle={{
-              paddingTop: headerHeight + 10,
-              paddingHorizontal: 10,
-              paddingBottom: 10,
-            }}
-            scrollIndicatorInsets={{ top: headerHeight }}
-            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-            recycleItems={true}
-            initialScrollIndex={messages?.length - 1}
-            alignItemsAtEnd // Aligns to the end of the screen, so if there's only a few items there will be enough padding at the top to make them appear to be at the bottom.
-            maintainScrollAtEnd // prop will check if you are already scrolled to the bottom when data changes, and if so it keeps you scrolled to the bottom.
-            maintainScrollAtEndThreshold={0.5} // prop will check if you are already scrolled to the bottom when data changes, and if so it keeps you scrolled to the bottom.
-            maintainVisibleContentPosition //Automatically adjust item positions when items are added/removed/resized above the viewport so that there is no shift in the visible content.
-            estimatedItemSize={60} // estimated height of the item
-            onScroll={handleScroll}
-            scrollEventThrottle={100}
-            ListEmptyComponent={
-              <View style={styles.centeredInfo}>
-                <Text style={styles.infoText}>
-                  Ingen meldinger enda. Vær den forste!
-                </Text>
-              </View>
-            }
-          />
+      <View style={{ flex: 1 }}>
+        <LegendList
+          ref={chatContainerRef}
+          data={messages ?? []}
+          renderItem={({ item }) => {
+            const user = getUserFromId(item.userId);
+            const isCurrentUser = isChatFromUser(item.userId);
+            return (
+              <ChatMessageBubble
+                message={item}
+                userName={user?.name ?? "Ukjent"}
+                isCurrentUser={isCurrentUser}
+                currentUserId={currentUser?._id}
+              />
+            );
+          }}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={{
+            paddingHorizontal: 10,
+            paddingBottom: 10,
+          }}
+          // scrollIndicatorInsets={{ top: headerHeight }}
+          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+          recycleItems={true}
+          initialScrollIndex={messages.length - 1}
+          alignItemsAtEnd // Aligns to the end of the screen, so if there's only a few items there will be enough padding at the top to make them appear to be at the bottom.
+          maintainScrollAtEnd // prop will check if you are already scrolled to the bottom when data changes, and if so it keeps you scrolled to the bottom.
+          maintainScrollAtEndThreshold={0.5} // prop will check if you are already scrolled to the bottom when data changes, and if so it keeps you scrolled to the bottom.
+          maintainVisibleContentPosition //Automatically adjust item positions when items are added/removed/resized above the viewport so that there is no shift in the visible content.
+          estimatedItemSize={60} // estimated height of the item
+          onScroll={handleScroll}
+          scrollEventThrottle={100}
+          ListEmptyComponent={
+            <View style={styles.centeredInfo}>
+              <Text style={styles.infoText}>
+                Ingen meldinger enda. Vær den forste!
+              </Text>
+            </View>
+          }
+        />
 
-          {showScrollBtn && (
-            <Animated.View
-              style={[
-                styles.scrollBtnWrapper,
-                { transform: [{ translateY: bounceAnim }] },
+        {showScrollBtn && (
+          <RNAnimated.View
+            style={[
+              styles.scrollBtnWrapper,
+              { transform: [{ translateY: bounceAnim }] },
+            ]}
+            pointerEvents="box-none"
+          >
+            <Pressable
+              onPress={scrollToBottom}
+              style={({ pressed }) => [
+                styles.scrollBtn,
+                pressed && { opacity: 0.7 },
               ]}
-              pointerEvents="box-none"
             >
-              <Pressable
-                onPress={scrollToBottom}
-                style={({ pressed }) => [
-                  styles.scrollBtn,
-                  pressed && { opacity: 0.7 },
-                ]}
-              >
-                <Ionicons name="chevron-down" size={18} color="#fff" />
-              </Pressable>
-            </Animated.View>
-          )}
-        </View>
+              <Ionicons name="chevron-down" size={18} color="#fff" />
+            </Pressable>
+          </RNAnimated.View>
+        )}
+      </View>
 
-        <View style={styles.form}>
-          <Input
-            containerStyle={styles.inputContainer}
-            value={message}
-            multiline
-            onChangeText={setMessage}
-            placeholder="Send en melding til boaza..."
-            editable={!isSending}
-            style={styles.input}
-            returnKeyType="send"
-            blurOnSubmit={false}
-            onSubmitEditing={() => void handleSend()}
-          />
-          <Button
-            title={isSending ? "Sender..." : "Send"}
-            onPress={() => void handleSend()}
-            disabled={isSending || message.trim().length === 0}
-          />
-        </View>
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
-        {/* </ScrollView> */}
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      <View
+        style={[
+          styles.form,
+          { marginBottom: keyboardVisible ? 0 : headerHeight },
+        ]}
+      >
+        <Input
+          containerStyle={styles.inputContainer}
+          value={message}
+          multiline
+          onChangeText={setMessage}
+          placeholder="Send en melding til boaza..."
+          editable={!isSending}
+          style={styles.input}
+          returnKeyType="send"
+          blurOnSubmit={false}
+          onSubmitEditing={() => void handleSend()}
+        />
+        <Button
+          title={isSending ? "Sender..." : "Send"}
+          onPress={() => void handleSend()}
+          disabled={isSending || message.trim().length === 0}
+        />
+      </View>
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      {/* </ScrollView> */}
+      <Animated.View style={keyboardPadding} />
+    </View>
   );
 }
 
