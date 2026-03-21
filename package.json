@@ -12,7 +12,9 @@
     "ts:check": "tsc --noEmit",
     "start:client": "expo start --dev-client",
     "vercel-build": "expo export",
-    "build:native": "expo prebuild"
+    "build:native": "expo prebuild",
+    "build:dev": "eas build --profile development --platform ios",
+    "build:ios-simulator": "eas build --profile ios-simulator --platform ios"
   },
   "dependencies": {
     "@convex-dev/auth": "^0.0.90",

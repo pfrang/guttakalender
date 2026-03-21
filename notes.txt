@@ -5,9 +5,8 @@ https://medium.com/@cathylai_40144/run-your-expo-app-on-a-physical-phone-with-a-
 
 --- Release Builds ----
 
----Development builds---
-
-https://expo.dev/accounts/peff/projects/guttakalender/builds/2f9a27fe-8817-4b81-ac91-4584d4d8513b
+---Latest Development build---
+https://expo.dev/accounts/peff/projects/guttakalender/builds/893f5fca-ef52-4324-b048-831f1e741442
 
 ---Latest Preview builds---
 hhttps://expo.dev/accounts/peff/projects/guttakalender/builds/d8f561c3-8e36-44a2-a2eb-a9dc13c59562
