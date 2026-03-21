@@ -93,8 +93,8 @@ export default function Chat() {
     setShowScrollBtn(distanceFromBottom > 100);
   };
 
-  function scrollToBottom() {
-    chatContainerRef.current?.scrollToEnd({ animated: true });
+  function scrollToBottom(animated: boolean = true) {
+    chatContainerRef.current?.scrollToEnd({ animated });
   }
 
   const [message, setMessage] = useState("");
@@ -174,6 +174,7 @@ export default function Chat() {
           }}
           keyExtractor={(item) => item._id}
           contentContainerStyle={{
+            // paddingTop: Platform.OS === "ios" ? headerHeight : 0,
             paddingHorizontal: 10,
             paddingBottom: 10,
           }}
@@ -206,7 +207,7 @@ export default function Chat() {
             pointerEvents="box-none"
           >
             <Pressable
-              onPress={scrollToBottom}
+              onPress={() => scrollToBottom(true)}
               style={({ pressed }) => [
                 styles.scrollBtn,
                 pressed && { opacity: 0.7 },
