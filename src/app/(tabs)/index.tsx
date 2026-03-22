@@ -4,8 +4,8 @@ import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
 import { useQuery } from "convex/react";
 import { Link, useRouter } from "expo-router";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { AddComponent } from "../components/Add";
-import { Group } from "../components/Group";
+import { AddComponent } from "../../components/Add";
+import { Group } from "../../components/Group";
 
 export default function Index() {
   const router = useRouter();
@@ -13,7 +13,7 @@ export default function Index() {
   usePushNotifications();
 
   return (
-    <>
+    <View style={styles.container}>
       <FlatList
         data={user?.groups ?? []}
         contentInsetAdjustmentBehavior="automatic"
@@ -23,9 +23,6 @@ export default function Index() {
             <View style={styles.buttonRow}>
               <Link href="/JoinGroup" asChild>
                 <Button title="Bli med i gruppe" />
-              </Link>
-              <Link href="/settings" asChild>
-                <Button variant="secondary" title="Instillinger" />
               </Link>
             </View>
             <Text>Dine grupper</Text>
@@ -47,14 +44,41 @@ export default function Index() {
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
         contentContainerStyle={styles.listContent}
       />
+
+      <FlatList
+        data={user?.groups ?? []}
+        contentInsetAdjustmentBehavior="automatic"
+        style={{ flex: 1 }}
+        ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <Text>Dine siste samtaler</Text>
+          </View>
+        }
+        keyExtractor={(item) => item}
+        contentContainerStyle={styles.listContent}
+        renderItem={({ item }) => (
+          <Pressable
+            onPress={() =>
+              router.push({
+                pathname: "/group/[id]",
+                params: { id: item },
+              })
+            }
+          >
+            <Group groupId={item} />
+          </Pressable>
+        )}
+      />
       <AddComponent path="/AddGroup" />
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 16,
   },
   header: {
     gap: 16,
@@ -66,7 +90,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   listContent: {
-    padding: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,

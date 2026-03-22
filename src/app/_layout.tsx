@@ -120,8 +120,10 @@ function RootLayoutInner() {
             headerTintColor: UI.colors.primary,
           }}
         >
-          <Stack.Screen name="index" options={{ title: "Dine grupper" }} />
-          <Stack.Screen name="settings" options={{ title: "Instillinger" }} />
+          <Stack.Screen
+            name="(tabs)"
+            options={{ headerShown: true, title: "Guttakalenderen" }}
+          />
           <Stack.Screen
             name="AddGroup"
             options={{

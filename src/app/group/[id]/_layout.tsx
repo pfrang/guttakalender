@@ -1,6 +1,5 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { useHeaderHeight } from "@react-navigation/elements";
 import { Authenticated, useQuery } from "convex/react";
 import { Stack, useLocalSearchParams, useNavigation } from "expo-router";
 import { useEffect } from "react";
@@ -8,7 +7,6 @@ import { useEffect } from "react";
 export default function GroupLayout() {
   const params = useLocalSearchParams();
   const navigation = useNavigation();
-  const headerHeight = useHeaderHeight();
   const groupId = typeof params.id === "string" ? params.id : params.id?.[0];
 
   const group = useQuery(
@@ -31,13 +29,6 @@ export default function GroupLayout() {
           headerShown: false,
         }}
       >
-        <Stack.Screen
-          name="(tabs)"
-          options={{
-            headerShown: false,
-          }}
-        />
-
         <Stack.Screen
           name="AddPlan"
           options={{
