@@ -61,7 +61,7 @@ export default function Index() {
           <Pressable
             onPress={() =>
               router.push({
-                pathname: "/group/[id]",
+                pathname: "/chats/[id]",
                 params: { id: item },
               })
             }

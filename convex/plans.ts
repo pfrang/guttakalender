@@ -15,6 +15,19 @@ export const getPlans = query({
   },
 });
 
+export const getPlansForCurrentUser = query({
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+    return await ctx.db
+      .query("plans")
+      .withIndex("by_attendees", (q) => q.eq("attendees", [userId]))
+      .collect();
+  },
+});
+
 export const addPlan = mutation({
   args: {
     date: v.string(),

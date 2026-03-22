@@ -19,6 +19,10 @@ function MobileLayout() {
         <NativeTabs.Trigger.Label>Chats</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={"message"} />
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="plans">
+        <NativeTabs.Trigger.Label>Planer</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf={"calendar"} />
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="settings">
         <NativeTabs.Trigger.Label>Profil</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={"person"} />

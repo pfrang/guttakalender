@@ -10,3 +10,12 @@ https://expo.dev/accounts/peff/projects/guttakalender/builds/893f5fca-ef52-4324-
 
 ---Latest Preview builds---
 hhttps://expo.dev/accounts/peff/projects/guttakalender/builds/d8f561c3-8e36-44a2-a2eb-a9dc13c59562
+
+------Testflight----
+
+Sette .env til production
+
+npx expo prebuild --platform ios --clean
+cd ios && pod install
+Åpne .workspacex filen i /ios mappa fra xcode
+Trykk Product fra toppmeny -> Archive

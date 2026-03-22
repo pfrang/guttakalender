@@ -28,6 +28,20 @@ export const getGroupById = query({
   },
 });
 
+export const getGroupsForCurrentUser = query({
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    return await ctx.db
+      .query("groups")
+      .withIndex("by_users", (q) => q.eq("users", [userId]))
+      .collect();
+  },
+});
+
 export const addGroup = mutation({
   args: {
     name: v.string(),

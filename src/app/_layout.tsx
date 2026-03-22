@@ -125,6 +125,14 @@ function RootLayoutInner() {
             options={{ headerShown: true, title: "Guttakalenderen" }}
           />
           <Stack.Screen
+            name="chats/[id]"
+            options={{
+              headerShown: false,
+              presentation: "modal",
+              animation: "slide_from_right",
+            }}
+          />
+          <Stack.Screen
             name="AddGroup"
             options={{
               title: "Legg til gruppe",

@@ -31,7 +31,8 @@ export default defineSchema({
     attendees: v.array(v.id("users")),
   })
     .index("by_date", ["date"])
-    .index("by_groupId", ["groupId"]),
+    .index("by_groupId", ["groupId"])
+    .index("by_attendees", ["attendees"]),
   chat: defineTable({
     message: v.string(),
     userId: v.id("users"),
