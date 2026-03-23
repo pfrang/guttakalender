@@ -52,7 +52,7 @@ export default function Chat() {
   }, []);
 
   const messages = useQuery(
-    api.chat.getChats,
+    api.chat.getChatsByGroupId,
     groupId ? { groupId: groupId as Id<"groups"> } : "skip",
   );
   const users = useQuery(api.users.getUsers);
@@ -129,9 +129,6 @@ export default function Chat() {
     return users?.find((user) => user._id === userId);
   }
 
-  const isLoading =
-    messages === undefined || users === undefined || currentUser === undefined;
-
   const { height } = useGradualAnimation();
 
   const keyboardPadding = useAnimatedStyle(() => {
@@ -142,7 +139,9 @@ export default function Chat() {
 
   const hasInitialScrolled = useRef(false);
 
-  if (isLoading) {
+  // Only gate on messages — users/currentUser load in the background and
+  // render with fallbacks, avoiding the full-screen spinner on re-visits.
+  if (messages === undefined) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator />
@@ -194,7 +193,6 @@ export default function Chat() {
           maintainScrollAtEndThreshold={0.5} // prop will check if you are already scrolled to the bottom when data changes, and if so it keeps you scrolled to the bottom.
           maintainVisibleContentPosition //Automatically adjust item positions when items are added/removed/resized above the viewport so that there is no shift in the visible content.
           // estimatedItemSize={60} // estimated height of the item
-          waitForInitialLayout
           onScroll={handleScroll}
           // scrollEventThrottle={100}
           ListEmptyComponent={

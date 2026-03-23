@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Plans() {
   const plans = useQuery(api.plans.getPlansForCurrentUser);
@@ -15,14 +16,7 @@ export default function Plans() {
   const plansAfterToday = plans ?? [];
 
   const isLoading = plans === undefined;
-
-  if (plansAfterToday.length === 0) {
-    return (
-      <View style={styles.container}>
-        <Text>Ingen planer lagt til enda</Text>
-      </View>
-    );
-  }
+  const hasPlans = plansAfterToday.length > 0;
 
   if (isLoading) {
     return (
@@ -33,31 +27,25 @@ export default function Plans() {
   }
 
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <PlansListId plans={plansAfterToday} />
-      </ScrollView>
-    </View>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      {hasPlans ? (
+        <ScrollView contentContainerStyle={styles.content}>
+          <PlansListId plans={plansAfterToday} />
+        </ScrollView>
+      ) : (
+        <Text>Ingen planer lagt til enda</Text>
+      )}
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 16,
   },
   content: {
-    padding: 16,
     gap: 12,
     paddingBottom: 96,
-  },
-
-  title: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#111827",
-  },
-  message: {
-    color: "#374151",
-    fontSize: 16,
   },
 });

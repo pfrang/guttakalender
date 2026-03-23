@@ -15,16 +15,33 @@ export const getPlans = query({
   },
 });
 
+// Fetches all plans the current user is attending.
+// Strategy: groupMembers (indexed) → plans by groupId (indexed) → filter by attendees.
+// This replaces the previous broken by_attendees index approach.
 export const getPlansForCurrentUser = query({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
       throw new Error("Unauthorized");
     }
-    return await ctx.db
-      .query("plans")
-      .withIndex("by_attendees", (q) => q.eq("attendees", [userId]))
+
+    const memberships = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
       .collect();
+
+    const plansByGroup = await Promise.all(
+      memberships.map((m) =>
+        ctx.db
+          .query("plans")
+          .withIndex("by_groupId", (q) => q.eq("groupId", m.groupId))
+          .collect(),
+      ),
+    );
+
+    return plansByGroup
+      .flat()
+      .filter((plan) => plan.attendees.includes(userId));
   },
 });
 
@@ -36,7 +53,6 @@ export const addPlan = mutation({
     groupId: v.id("groups"),
     attendees: v.array(v.id("users")),
   },
-
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
@@ -58,15 +74,13 @@ export const deletePlan = mutation({
   args: {
     planId: v.id("plans"),
   },
-
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
       throw new Error("Unauthorized");
     }
 
-    // Optional: Check if the user is the owner of the plan before deleting
-    const plan = await ctx.db.get("plans", args.planId);
+    const plan = await ctx.db.get(args.planId);
     if (!plan) {
       throw new Error("Plan not found");
     }
@@ -75,7 +89,7 @@ export const deletePlan = mutation({
       throw new Error("You can only delete your own plans");
     }
 
-    await ctx.db.delete("plans", args.planId);
+    await ctx.db.delete(args.planId);
   },
 });
 
@@ -89,13 +103,18 @@ export const addUserToPlan = mutation({
     if (!userId) {
       throw new Error("Unauthorized");
     }
-    const plan = await ctx.db.get("plans", args.id);
+    const plan = await ctx.db.get(args.id);
 
     if (!plan) {
       throw new Error("Plan not found");
     }
 
-    return await ctx.db.patch("plans", args.id, {
+    // Idempotent — skip if already attending
+    if (plan.attendees.includes(args.userId)) {
+      return;
+    }
+
+    await ctx.db.patch(args.id, {
       attendees: [...plan.attendees, args.userId],
     });
   },
@@ -111,18 +130,14 @@ export const removeUserFromPlan = mutation({
     if (!userId) {
       throw new Error("Unauthorized");
     }
-    const plan = await ctx.db.get("plans", args.id);
+    const plan = await ctx.db.get(args.id);
 
     if (!plan) {
       throw new Error("Plan not found");
     }
 
-    const updatedAttendees = plan.attendees.filter(
-      (attendee) => attendee !== args.userId,
-    );
-
-    return await ctx.db.patch("plans", args.id, {
-      attendees: updatedAttendees,
+    await ctx.db.patch(args.id, {
+      attendees: plan.attendees.filter((id) => id !== args.userId),
     });
   },
 });
