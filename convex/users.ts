@@ -1,7 +1,6 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
-import { Id } from "./_generated/dataModel";
 import {
   internalMutation,
   internalQuery,
@@ -23,37 +22,7 @@ export const getCurrentUser = query({
     if (!userId) {
       throw new Error("Unauthorized");
     }
-    return await ctx.db.get("users", userId);
-  },
-});
-
-export const addUserToGroup = mutation({
-  args: {
-    userId: v.id("users"),
-    groupId: v.id("groups"),
-  },
-  handler: async (ctx, args) => {
-    await ctx.db.patch(args.userId as Id<"users">, {
-      groups: [
-        ...((await ctx.db.get(args.userId as Id<"users">))?.groups || []),
-        args.groupId,
-      ],
-    });
-  },
-});
-
-export const internalAddGroupToUser = internalMutation({
-  args: {
-    userId: v.id("users"),
-    groupId: v.id("groups"),
-  },
-  handler: async (ctx, args) => {
-    const user = await ctx.db.get(args.userId);
-    const currentGroups = user?.groups ?? [];
-    if (currentGroups.includes(args.groupId)) return;
-    await ctx.db.patch(args.userId, {
-      groups: [...currentGroups, args.groupId],
-    });
+    return await ctx.db.get(userId);
   },
 });
 
@@ -67,7 +36,7 @@ export const mutateUser = mutation({
       throw new Error("Unauthorized");
     }
 
-    await ctx.db.patch("users", userId, {
+    await ctx.db.patch(userId, {
       name: args.name,
     });
   },
@@ -107,16 +76,22 @@ export const savePushToken = mutation({
   },
 });
 
+// Uses the groupMembers join table instead of reading users[] off the group doc.
 export const getPushTokensForGroup = internalQuery({
   args: {
     groupId: v.id("groups"),
     senderUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    const group = await ctx.db.get(args.groupId);
-    const memberIds = (group?.users ?? []).filter(
-      (id) => id !== args.senderUserId,
-    );
+    const memberships = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_groupId", (q) => q.eq("groupId", args.groupId))
+      .collect();
+
+    const memberIds = memberships
+      .map((m) => m.userId)
+      .filter((id) => id !== args.senderUserId);
+
     if (memberIds.length === 0) return [];
 
     const tokens = await Promise.all(
@@ -127,6 +102,7 @@ export const getPushTokensForGroup = internalQuery({
           .collect(),
       ),
     );
+
     return tokens.flat();
   },
 });

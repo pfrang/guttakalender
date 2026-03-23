@@ -1,21 +1,25 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
-import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 
-export const getGroupsForUser = query({
-  args: {
-    userId: v.id("users"),
-  },
-  handler: async (ctx, args) => {
+export const getGroupsForCurrentUser = query({
+  handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
       throw new Error("Unauthorized");
     }
 
-    const allGroups = await ctx.db.query("groups").collect();
-    return allGroups.filter((group) => group.users?.includes(userId));
+    const memberships = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .collect();
+
+    const groups = await Promise.all(
+      memberships.map((m) => ctx.db.get(m.groupId)),
+    );
+
+    return groups.filter((g): g is NonNullable<typeof g> => g !== null);
   },
 });
 
@@ -25,6 +29,26 @@ export const getGroupById = query({
   },
   handler: async (ctx, args) => {
     return await ctx.db.get(args.id);
+  },
+});
+
+// Returns the full user docs for all members of a group.
+// Use this instead of fetching all users and filtering client-side.
+export const getGroupMembers = query({
+  args: {
+    groupId: v.id("groups"),
+  },
+  handler: async (ctx, args) => {
+    const memberships = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_groupId", (q) => q.eq("groupId", args.groupId))
+      .collect();
+
+    const users = await Promise.all(
+      memberships.map((m) => ctx.db.get(m.userId)),
+    );
+
+    return users.filter((u): u is NonNullable<typeof u> => u !== null);
   },
 });
 
@@ -40,13 +64,10 @@ export const addGroup = mutation({
 
     const groupId = await ctx.db.insert("groups", {
       name: args.name,
-      users: [userId],
     });
 
-    await ctx.scheduler.runAfter(0, internal.users.internalAddGroupToUser, {
-      userId,
-      groupId,
-    });
+    // Insert directly in the same mutation — no scheduler needed.
+    await ctx.db.insert("groupMembers", { groupId, userId });
 
     return groupId;
   },
@@ -61,30 +82,29 @@ export const joinGroup = mutation({
     if (!userId) {
       throw new Error("Unauthorized");
     }
-    const group = await ctx.db
-      .query("groups")
-      .filter((q) => q.eq(q.field("_id"), args.groupId))
-      .first();
 
+    const group = await ctx.db.get(args.groupId as Id<"groups">);
     if (!group) {
       return 404;
     }
 
-    const currentUsers = group.users ?? [];
+    // Membership check via index — O(1), no array scan.
+    const existing = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_groupId_userId", (q) =>
+        q.eq("groupId", args.groupId as Id<"groups">).eq("userId", userId),
+      )
+      .unique();
 
-    if (currentUsers.includes(userId)) {
+    if (existing) {
       return 409;
     }
 
-    const groupId = await ctx.db.patch(args.groupId as Id<"groups">, {
-      users: [...currentUsers, userId],
-    });
-
-    await ctx.scheduler.runAfter(0, internal.users.internalAddGroupToUser, {
-      userId,
+    await ctx.db.insert("groupMembers", {
       groupId: args.groupId as Id<"groups">,
+      userId,
     });
 
-    return groupId;
+    return null;
   },
 });

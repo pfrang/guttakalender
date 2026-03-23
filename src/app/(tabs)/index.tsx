@@ -9,13 +9,13 @@ import { Group } from "../../components/Group";
 
 export default function Index() {
   const router = useRouter();
-  const user = useQuery(api.users.getCurrentUser);
+  const groups = useQuery(api.groups.getGroupsForCurrentUser);
   usePushNotifications();
 
   return (
     <View style={styles.container}>
       <FlatList
-        data={user?.groups ?? []}
+        data={groups ?? []}
         contentInsetAdjustmentBehavior="automatic"
         style={{ flex: 1 }}
         ListHeaderComponent={
@@ -33,20 +33,20 @@ export default function Index() {
             onPress={() =>
               router.push({
                 pathname: "/group/[id]",
-                params: { id: item },
+                params: { id: item._id },
               })
             }
           >
-            <Group groupId={item} />
+            <Group groupId={item._id} />
           </Pressable>
         )}
-        keyExtractor={(item) => item}
+        keyExtractor={(item) => item._id}
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
         contentContainerStyle={styles.listContent}
       />
 
       <FlatList
-        data={user?.groups ?? []}
+        data={groups ?? []}
         contentInsetAdjustmentBehavior="automatic"
         style={{ flex: 1 }}
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
@@ -55,18 +55,18 @@ export default function Index() {
             <Text>Dine siste samtaler</Text>
           </View>
         }
-        keyExtractor={(item) => item}
+        keyExtractor={(item) => item._id}
         contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
           <Pressable
             onPress={() =>
               router.push({
-                pathname: "/group/[id]",
-                params: { id: item },
+                pathname: "/chats/[id]",
+                params: { id: item._id },
               })
             }
           >
-            <Group groupId={item} />
+            <Group groupId={item._id} />
           </Pressable>
         )}
       />

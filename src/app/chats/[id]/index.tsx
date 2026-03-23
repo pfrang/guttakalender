@@ -4,13 +4,12 @@ import { Button } from "@/lib/components/Button";
 import { Input } from "@/lib/components/Input";
 import { Ionicons } from "@expo/vector-icons";
 import { LegendList, LegendListRef } from "@legendapp/list";
-import { useHeaderHeight } from "@react-navigation/elements";
 import { useMutation, useQuery } from "convex/react";
-import { useGlobalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 
 import { useGradualAnimation } from "@/lib/hooks/useGradualAnimation";
 import { ChatMessageBubble } from "@/src/components/ChatMessageBubble";
+import { useLocalSearchParams } from "expo-router";
 import {
   ActivityIndicator,
   Keyboard,
@@ -25,10 +24,9 @@ import {
 } from "react-native";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 
-export default function Chat() {
-  const { id } = useGlobalSearchParams<{ id?: string | string[] }>();
+export default function ChatId() {
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
   const groupId = Array.isArray(id) ? id[0] : id;
-  const headerHeight = useHeaderHeight();
 
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
@@ -225,12 +223,7 @@ export default function Chat() {
         )}
       </View>
 
-      <View
-        style={[
-          styles.form,
-          { marginBottom: keyboardVisible ? 0 : headerHeight - 20 },
-        ]}
-      >
+      <View style={[styles.form, { marginBottom: 10 }]}>
         <Input
           containerStyle={styles.inputContainer}
           value={message}

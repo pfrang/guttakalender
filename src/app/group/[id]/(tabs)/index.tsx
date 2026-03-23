@@ -10,14 +10,19 @@ export default function GroupDetails() {
   const { id } = useGlobalSearchParams<{ id?: string | string[] }>();
   const headerHeight = useHeaderHeight();
   const groupId = Array.isArray(id) ? id[0] : id;
+
   const group = useQuery(
     api.groups.getGroupById,
     groupId ? { id: groupId as Id<"groups"> } : "skip",
   );
-  const users = useQuery(api.users.getUsers);
 
-  const groupUsers = users?.filter((user) => group?.users?.includes(user._id));
-  const groupUserNames = groupUsers?.map((user) => user.name).join(", ");
+  // Fetches only the members of this group — no full users scan.
+  const groupMembers = useQuery(
+    api.groups.getGroupMembers,
+    groupId ? { groupId: groupId as Id<"groups"> } : "skip",
+  );
+
+  const groupUserNames = groupMembers?.map((user) => user.name).join(", ");
 
   return (
     <View style={[styles.container, { paddingTop: headerHeight + 12 }]}>
