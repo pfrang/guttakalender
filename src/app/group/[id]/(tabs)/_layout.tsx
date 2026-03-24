@@ -16,7 +16,7 @@ function MobileLayout() {
         <NativeTabs.Trigger.Icon sf={"house"} />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger disableScrollToTop name="chat">
-        <NativeTabs.Trigger.Label>Chat</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>Gruppechat</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={"message"} />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="plans">

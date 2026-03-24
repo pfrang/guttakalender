@@ -10,9 +10,9 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 interface Props {
   plans: Doc<"plans">[];
-  groupId: Id<"groups">;
+  fromRoot?: boolean;
 }
-export function PlansList({ plans, groupId }: Props) {
+export function PlansList({ plans, fromRoot }: Props) {
   const user = useQuery(api.users.getCurrentUser);
 
   function isAttending(attendees: string[]) {
@@ -27,15 +27,24 @@ export function PlansList({ plans, groupId }: Props) {
         return (
           <Pressable
             key={plan._id}
-            onPress={() =>
-              router.push({
-                pathname: "/group/[id]/plans/[planId]",
-                params: {
-                  id: groupId,
-                  planId: plan._id as Id<"plans">,
-                },
-              })
-            }
+            onPress={() => {
+              if (fromRoot) {
+                router.push({
+                  pathname: "/plans/[id]",
+                  params: {
+                    id: plan._id as Id<"plans">,
+                  },
+                });
+              } else {
+                router.push({
+                  pathname: "/group/[id]/plans/[planId]",
+                  params: {
+                    id: plan.groupId as Id<"groups">,
+                    planId: plan._id as Id<"plans">,
+                  },
+                });
+              }
+            }}
             style={({ pressed }) => [
               styles.cardWrapper,
               pressed && styles.cardPressed,

@@ -28,7 +28,7 @@ export const getGroupById = query({
     id: v.id("groups"),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    return await ctx.db.get("groups", args.id);
   },
 });
 
@@ -66,8 +66,10 @@ export const addGroup = mutation({
       name: args.name,
     });
 
-    // Insert directly in the same mutation — no scheduler needed.
     await ctx.db.insert("groupMembers", { groupId, userId });
+
+    // Create the conversation for this group so the chat tab works immediately.
+    await ctx.db.insert("conversations", { type: "group", groupId });
 
     return groupId;
   },

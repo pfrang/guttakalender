@@ -1,5 +1,5 @@
 import { api } from "@/convex/_generated/api";
-import { PlansListId } from "@/src/components/PlansListId";
+import PlansList from "@/src/components/PlansList";
 import { useQuery } from "convex/react";
 import {
   ActivityIndicator,
@@ -30,7 +30,10 @@ export default function Plans() {
     <SafeAreaView style={styles.container} edges={["top"]}>
       {hasPlans ? (
         <ScrollView contentContainerStyle={styles.content}>
-          <PlansListId plans={plansAfterToday} />
+          <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+            Dine kommende planer
+          </Text>
+          <PlansList plans={plansAfterToday} fromRoot />
         </ScrollView>
       ) : (
         <Text>Ingen planer lagt til enda</Text>

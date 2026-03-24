@@ -10,6 +10,7 @@
 
 import type * as auth from "../auth.js";
 import type * as chat from "../chat.js";
+import type * as conversations from "../conversations.js";
 import type * as groups from "../groups.js";
 import type * as http from "../http.js";
 import type * as plans from "../plans.js";
@@ -26,6 +27,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   chat: typeof chat;
+  conversations: typeof conversations;
   groups: typeof groups;
   http: typeof http;
   plans: typeof plans;

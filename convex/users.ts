@@ -107,6 +107,18 @@ export const getPushTokensForGroup = internalQuery({
   },
 });
 
+export const getPushTokensForUser = internalQuery({
+  args: {
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("pushTokens")
+      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+      .collect();
+  },
+});
+
 export const removePushToken = internalMutation({
   args: {
     token: v.string(),

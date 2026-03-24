@@ -113,7 +113,11 @@ export default function PlanDetailsModal() {
   const isOwner = isUserPlan(plan.creator);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      contentInsetAdjustmentBehavior="automatic"
+    >
       <View style={styles.card}>
         <View style={styles.row}>
           <Ionicons name="time-outline" size={18} color="#111827" />

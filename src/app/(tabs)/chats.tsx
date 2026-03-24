@@ -1,9 +1,14 @@
 import { api } from "@/convex/_generated/api";
+import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "convex/react";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
+  ActionSheetIOS,
   ActivityIndicator,
   FlatList,
+  Modal,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -15,12 +20,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 // Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Returns a human-readable timestamp:
- *   - Same day  → "14:32"
- *   - This week → "Mon"
- *   - Older     → "12.03"
- */
 function formatTimestamp(ms: number): string {
   const now = new Date();
   const date = new Date(ms);
@@ -48,8 +47,11 @@ function formatTimestamp(ms: number): string {
 // ChatRow
 // ---------------------------------------------------------------------------
 
-type ChatRow = {
-  group: { _id: string; _creationTime: number; name: string };
+type ConversationRow = {
+  id: string;
+  type: "group" | "dm";
+  name: string;
+  groupId: string | null;
   latestMessage: {
     _id: string;
     _creationTime: number;
@@ -59,7 +61,13 @@ type ChatRow = {
   isMine: boolean;
 };
 
-function ChatRow({ item, onPress }: { item: ChatRow; onPress: () => void }) {
+function ChatRow({
+  item,
+  onPress,
+}: {
+  item: ConversationRow;
+  onPress: () => void;
+}) {
   const preview = item.latestMessage
     ? item.isMine
       ? `Du: ${item.latestMessage.message}`
@@ -72,32 +80,39 @@ function ChatRow({ item, onPress }: { item: ChatRow; onPress: () => void }) {
     ? formatTimestamp(item.latestMessage._creationTime)
     : null;
 
-  // First letter(s) of group name as avatar placeholder.
-  const initials = item.group.name
+  const isDm = item.type === "dm";
+
+  const initials = item.name
     .split(" ")
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase() ?? "")
     .join("");
+
+  const avatarColor = isDm ? "#4F46E5" : "#6B7280";
 
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
     >
-      {/* Avatar */}
-      <View style={styles.avatar}>
+      <View style={[styles.avatar, { backgroundColor: avatarColor }]}>
         <Text style={styles.avatarText}>{initials}</Text>
       </View>
 
-      {/* Content */}
       <View style={styles.rowContent}>
         <View style={styles.rowHeader}>
-          <Text style={styles.groupName} numberOfLines={1}>
-            {item.group.name}
-          </Text>
-          {timestamp ? (
-            <Text style={styles.timestamp}>{timestamp}</Text>
-          ) : null}
+          <View style={styles.nameRow}>
+            <Text style={styles.convName} numberOfLines={1}>
+              {item.name}
+            </Text>
+            <Ionicons
+              name={isDm ? "person" : "people-sharp"}
+              size={11}
+              color="#9CA3AF"
+              style={{ marginLeft: 4 }}
+            />
+          </View>
+          {timestamp ? <Text style={styles.timestamp}>{timestamp}</Text> : null}
         </View>
         <Text style={styles.preview} numberOfLines={1}>
           {preview}
@@ -108,18 +123,80 @@ function ChatRow({ item, onPress }: { item: ChatRow; onPress: () => void }) {
 }
 
 // ---------------------------------------------------------------------------
+// Android add-sheet
+// ---------------------------------------------------------------------------
+
+function AndroidAddSheet({
+  visible,
+  onClose,
+  onGroup,
+  onDM,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  onGroup: () => void;
+  onDM: () => void;
+}) {
+  return (
+    <Modal
+      transparent
+      animationType="slide"
+      visible={visible}
+      onRequestClose={onClose}
+    >
+      <Pressable style={sheet.backdrop} onPress={onClose}>
+        <View style={sheet.panel}>
+          <View style={sheet.handle} />
+          <Pressable style={sheet.option} onPress={onGroup}>
+            <Ionicons name="people-outline" size={22} color="#111827" />
+            <Text style={sheet.optionText}>Ny gruppe</Text>
+          </Pressable>
+          <View style={sheet.divider} />
+          <Pressable style={sheet.option} onPress={onDM}>
+            <Ionicons name="chatbubble-outline" size={22} color="#111827" />
+            <Text style={sheet.optionText}>Ny melding</Text>
+          </Pressable>
+          <Pressable style={sheet.cancelBtn} onPress={onClose}>
+            <Text style={sheet.cancelText}>Avbryt</Text>
+          </Pressable>
+        </View>
+      </Pressable>
+    </Modal>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Screen
 // ---------------------------------------------------------------------------
 
 export default function Chats() {
   const router = useRouter();
-  const overview = useQuery(api.chat.getChatsOverview);
+  const conversations = useQuery(api.conversations.getConversationsForUser);
+  const [showAndroidSheet, setShowAndroidSheet] = useState(false);
 
-  if (overview === undefined) {
+  const handleAddPress = () => {
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ["Avbryt", "Ny gruppe", "Ny melding"],
+          cancelButtonIndex: 0,
+        },
+        (idx) => {
+          if (idx === 1) router.push("/AddGroup");
+          if (idx === 2) router.push("/NewChat");
+        },
+      );
+    } else {
+      setShowAndroidSheet(true);
+    }
+  };
+
+  if (conversations === undefined) {
     return (
       <SafeAreaView style={styles.container} edges={["top"]}>
         <View style={styles.header}>
           <Text style={styles.title}>Meldinger</Text>
+          <AddButton onPress={handleAddPress} />
         </View>
         <View style={styles.centered}>
           <ActivityIndicator />
@@ -132,20 +209,35 @@ export default function Chats() {
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
         <Text style={styles.title}>Meldinger</Text>
+        <AddButton onPress={handleAddPress} />
       </View>
 
       <FlatList
-        data={overview}
-        keyExtractor={(item) => item.group._id}
+        data={conversations}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <ChatRow
-            item={item as ChatRow}
-            onPress={() => router.push(`/chats/${item.group._id}`)}
+            item={item as ConversationRow}
+            onPress={() => {
+              if (item.type === "dm") {
+                router.push({
+                  pathname: "/chats/[id]",
+                  params: { id: item.id },
+                });
+              } else {
+                router.push({
+                  pathname: "/group/[id]/chat",
+                  params: { id: item.groupId },
+                });
+              }
+            }}
           />
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         contentContainerStyle={
-          overview.length === 0 ? styles.emptyContainer : styles.listContent
+          conversations.length === 0
+            ? styles.emptyContainer
+            : styles.listContent
         }
         ListEmptyComponent={
           <View style={styles.centered}>
@@ -155,7 +247,38 @@ export default function Chats() {
           </View>
         }
       />
+
+      {Platform.OS === "android" && (
+        <AndroidAddSheet
+          visible={showAndroidSheet}
+          onClose={() => setShowAndroidSheet(false)}
+          onGroup={() => {
+            setShowAndroidSheet(false);
+            router.push("/AddGroup");
+          }}
+          onDM={() => {
+            setShowAndroidSheet(false);
+            router.push("/NewChat");
+          }}
+        />
+      )}
     </SafeAreaView>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Add button — liquid-glass style circle
+// ---------------------------------------------------------------------------
+
+function AddButton({ onPress }: { onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.addBtn, pressed && styles.addBtnPressed]}
+      hitSlop={8}
+    >
+      <Ionicons name="add" size={22} color="#007AFF" />
+    </Pressable>
   );
 }
 
@@ -171,6 +294,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 12,
@@ -182,13 +308,25 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#111827",
   },
+  addBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "rgba(0,122,255,0.10)",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 0.5,
+    borderColor: "rgba(0,122,255,0.20)",
+  },
+  addBtnPressed: {
+    backgroundColor: "rgba(0,122,255,0.18)",
+  },
   listContent: {
     paddingTop: 4,
   },
   emptyContainer: {
     flex: 1,
   },
-  // Row
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -200,12 +338,10 @@ const styles = StyleSheet.create({
   rowPressed: {
     backgroundColor: "#F3F4F6",
   },
-  // Avatar
   avatar: {
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
     borderRadius: AVATAR_SIZE / 2,
-    backgroundColor: "#6B7280",
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
@@ -215,7 +351,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-  // Row content
   rowContent: {
     flex: 1,
     gap: 3,
@@ -226,11 +361,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 8,
   },
-  groupName: {
+  nameRow: {
     flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  convName: {
     fontSize: 15,
     fontWeight: "600",
     color: "#111827",
+    flexShrink: 1,
   },
   timestamp: {
     fontSize: 12,
@@ -245,9 +385,8 @@ const styles = StyleSheet.create({
   separator: {
     height: StyleSheet.hairlineWidth,
     backgroundColor: "#E5E7EB",
-    marginLeft: 16 + AVATAR_SIZE + 12, // align with text, skip avatar
+    marginLeft: 16 + AVATAR_SIZE + 12,
   },
-  // Empty / loading
   centered: {
     flex: 1,
     alignItems: "center",
@@ -259,5 +398,56 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     textAlign: "center",
     lineHeight: 22,
+  },
+});
+
+const sheet = StyleSheet.create({
+  backdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "flex-end",
+  },
+  panel: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 36,
+    paddingTop: 12,
+    paddingHorizontal: 16,
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#D1D5DB",
+    alignSelf: "center",
+    marginBottom: 16,
+  },
+  option: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    paddingVertical: 16,
+  },
+  optionText: {
+    fontSize: 16,
+    color: "#111827",
+    fontWeight: "500",
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: "#E5E7EB",
+  },
+  cancelBtn: {
+    marginTop: 12,
+    paddingVertical: 14,
+    alignItems: "center",
+    backgroundColor: "#F3F4F6",
+    borderRadius: 12,
+  },
+  cancelText: {
+    fontSize: 16,
+    color: "#6B7280",
+    fontWeight: "500",
   },
 });

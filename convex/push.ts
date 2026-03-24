@@ -23,34 +23,53 @@ export const sendChatNotifications = internalAction({
     senderUserId: v.id("users"),
     message: v.string(),
     senderName: v.string(),
-    groupId: v.id("groups"),
+    conversationId: v.id("conversations"),
   },
   handler: async (ctx, args) => {
-    const recipients = await ctx.runQuery(
-      internal.users.getPushTokensForGroup,
-      {
-        groupId: args.groupId,
-        senderUserId: args.senderUserId,
-      },
+    const conv = await ctx.runQuery(
+      internal.conversations.getConversationForPush,
+      { conversationId: args.conversationId },
     );
+    if (!conv) return;
 
-    const uniqueTokens = Array.from(
-      new Set(recipients.map((item) => item.token)),
-    );
-    if (uniqueTokens.length === 0) {
+    let tokens: { token: string }[] = [];
+    let title = "Ny melding";
+    let body = args.message;
+    let notificationUrl = `/chats/${args.conversationId}`;
+
+    if (conv.type === "group" && conv.groupId) {
+      tokens = await ctx.runQuery(internal.users.getPushTokensForGroup, {
+        groupId: conv.groupId,
+        senderUserId: args.senderUserId,
+      });
+      const group = await ctx.runQuery(api.groups.getGroupById, {
+        id: conv.groupId,
+      });
+      title = group?.name ? `Ny melding i ${group.name}` : "Ny melding";
+      body = `${args.senderName}: ${args.message}`;
+      notificationUrl = `/group/${conv.groupId}/chat`;
+    } else if (conv.type === "dm" && conv.participantIds) {
+      const otherUserId = conv.participantIds.find(
+        (id) => id !== args.senderUserId,
+      );
+      if (!otherUserId) return;
+      tokens = await ctx.runQuery(internal.users.getPushTokensForUser, {
+        userId: otherUserId,
+      });
+      title = `Ny melding fra ${args.senderName}`;
+    } else {
       return;
     }
 
-    const group = await ctx.runQuery(api.groups.getGroupById, {
-      id: args.groupId,
-    });
+    const uniqueTokens = Array.from(new Set(tokens.map((t) => t.token)));
+    if (uniqueTokens.length === 0) return;
 
     const payload: ExpoPushMessage[] = uniqueTokens.map((token) => ({
       to: token,
       sound: "default",
-      title: group?.name ? "Ny melding i " + group.name : "Ny melding",
-      body: `${args.senderName}: ${args.message}`,
-      data: { url: `/group/${args.groupId}/chat` },
+      title,
+      body,
+      data: { url: notificationUrl },
     }));
 
     const chunks = chunkMessages(payload, 100);

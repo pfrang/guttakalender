@@ -3,6 +3,15 @@ import { v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
 
+export const getPlanById = query({
+  args: {
+    planId: v.id("plans"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.planId);
+  },
+});
+
 export const getPlans = query({
   args: {
     groupId: v.id("groups"),

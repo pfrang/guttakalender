@@ -1,11 +1,15 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Authenticated, useQuery } from "convex/react";
-import { Stack, useLocalSearchParams, useNavigation } from "expo-router";
+import {
+  Stack,
+  useGlobalSearchParams,
+  useNavigation
+} from "expo-router";
 import { useEffect } from "react";
 
 export default function GroupLayout() {
-  const params = useLocalSearchParams();
+  const params = useGlobalSearchParams();
   const navigation = useNavigation();
   const groupId = typeof params.id === "string" ? params.id : params.id?.[0];
 

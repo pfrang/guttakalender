@@ -51,9 +51,16 @@ export default function Chat() {
     };
   }, []);
 
-  const messages = useQuery(
-    api.chat.getChatsByGroupId,
+  // Resolve conversationId from groupId
+  const conversation = useQuery(
+    api.conversations.getConversationByGroupId,
     groupId ? { groupId: groupId as Id<"groups"> } : "skip",
+  );
+  const conversationId = conversation?._id;
+
+  const messages = useQuery(
+    api.chat.getChatsByConversationId,
+    conversationId ? { conversationId } : "skip",
   );
   const users = useQuery(api.users.getUsers);
   const currentUser = useQuery(api.users.getCurrentUser);
@@ -103,12 +110,12 @@ export default function Chat() {
 
   const handleSend = async () => {
     const trimmed = message.trim();
-    if (!trimmed || !groupId) return;
+    if (!trimmed || !conversationId) return;
 
     setError(null);
     setIsSending(true);
     try {
-      await sendMessage({ message: trimmed, groupId: groupId as Id<"groups"> });
+      await sendMessage({ message: trimmed, conversationId });
       setMessage("");
     } catch (sendError) {
       setError(
@@ -139,8 +146,6 @@ export default function Chat() {
 
   const hasInitialScrolled = useRef(false);
 
-  // Only gate on messages — users/currentUser load in the background and
-  // render with fallbacks, avoiding the full-screen spinner on re-visits.
   if (messages === undefined) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -151,16 +156,10 @@ export default function Chat() {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* <ScrollView
-        automaticallyAdjustKeyboardInsets={true}
-        // keyboardShouldPersistTaps="handled"
-        // keyboardDismissMode="interactive"
-        contentContainerStyle={{ flex: 1 }}
-      > */}
       <View style={{ flex: 1 }}>
         <LegendList
           ref={chatContainerRef}
-          data={messages ?? []}
+          data={messages}
           renderItem={({ item }) => {
             const user = getUserFromId(item.userId);
             const isCurrentUser = isChatFromUser(item.userId);
@@ -175,26 +174,21 @@ export default function Chat() {
           }}
           keyExtractor={(item) => item._id}
           contentContainerStyle={{
-            // paddingTop: Platform.OS === "ios" ? headerHeight : 0,
             paddingHorizontal: 10,
-            paddingBottom: 10,
           }}
-          // scrollIndicatorInsets={{ top: headerHeight }}
           ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
           recycleItems={true}
+          alignItemsAtEnd
           onContentSizeChange={() => {
             if (!hasInitialScrolled.current) {
               hasInitialScrolled.current = true;
               chatContainerRef.current?.scrollToEnd({ animated: false });
             }
           }}
-          alignItemsAtEnd // Aligns to the end of the screen, so if there's only a few items there will be enough padding at the top to make them appear to be at the bottom.
-          maintainScrollAtEnd // prop will check if you are already scrolled to the bottom when data changes, and if so it keeps you scrolled to the bottom.
-          maintainScrollAtEndThreshold={0.5} // prop will check if you are already scrolled to the bottom when data changes, and if so it keeps you scrolled to the bottom.
-          maintainVisibleContentPosition //Automatically adjust item positions when items are added/removed/resized above the viewport so that there is no shift in the visible content.
-          // estimatedItemSize={60} // estimated height of the item
+          maintainScrollAtEnd
+          maintainScrollAtEndThreshold={0.5}
+          maintainVisibleContentPosition
           onScroll={handleScroll}
-          // scrollEventThrottle={100}
           ListEmptyComponent={
             <View style={styles.centeredInfo}>
               <Text style={styles.infoText}>
@@ -228,7 +222,10 @@ export default function Chat() {
       <View
         style={[
           styles.form,
-          { marginBottom: keyboardVisible ? 0 : headerHeight - 20 },
+          {
+            marginBottom: keyboardVisible ? 0 : headerHeight - 20,
+            marginTop: 6,
+          },
         ]}
       >
         <Input
@@ -250,22 +247,12 @@ export default function Chat() {
         />
       </View>
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
-      {/* </ScrollView> */}
       <Animated.View style={keyboardPadding} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  chatArea: {
-    flex: 1,
-  },
-  chatContent: {
-    padding: 12,
-  },
   centeredInfo: {
     flex: 1,
     justifyContent: "center",

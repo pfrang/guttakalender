@@ -52,7 +52,7 @@ export default function Index() {
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
         ListHeaderComponent={
           <View style={styles.header}>
-            <Text>Dine siste samtaler</Text>
+            <Text>Dine samtaler</Text>
           </View>
         }
         keyExtractor={(item) => item._id}
@@ -61,7 +61,7 @@ export default function Index() {
           <Pressable
             onPress={() =>
               router.push({
-                pathname: "/chats/[id]",
+                pathname: "/group/[id]/chat",
                 params: { id: item._id },
               })
             }

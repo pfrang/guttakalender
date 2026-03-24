@@ -1,6 +1,5 @@
 import { SignInForm } from "@/lib/components/SignInForm";
 import { ConvexAuthProvider, type TokenStorage } from "@convex-dev/auth/react";
-import { HeaderBackButton } from "@react-navigation/elements";
 import {
   Authenticated,
   ConvexReactClient,
@@ -8,7 +7,7 @@ import {
   useConvexAuth,
 } from "convex/react";
 import * as Notifications from "expo-notifications";
-import { router, Stack, useRouter, useSegments } from "expo-router";
+import { router, Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -91,10 +90,6 @@ function RootLayoutInner() {
     }
   }, [isLoading]);
 
-  const segments = useSegments() as string[];
-  const isOnPlanScreen = segments.includes("[planId]");
-  const router = useRouter();
-
   return (
     <KeyboardProvider>
       <StatusBar style="dark" />
@@ -120,18 +115,7 @@ function RootLayoutInner() {
             headerTintColor: UI.colors.primary,
           }}
         >
-          <Stack.Screen
-            name="(tabs)"
-            options={{ headerShown: true, title: "Guttakalenderen" }}
-          />
-          <Stack.Screen
-            name="chats/[id]"
-            options={{
-              headerShown: false,
-              presentation: "modal",
-              animation: "slide_from_right",
-            }}
-          />
+          <Stack.Screen name="(tabs)" options={{ title: "Guttakalenderen" }} />
           <Stack.Screen
             name="AddGroup"
             options={{
@@ -149,18 +133,19 @@ function RootLayoutInner() {
             }}
           />
           <Stack.Screen
-            name="group/[id]"
+            name="NewChat"
             options={{
-              title: isOnPlanScreen ? "Plan" : "",
-              headerLeft: isOnPlanScreen
-                ? (props) => (
-                    <HeaderBackButton
-                      {...props}
-                      label=""
-                      onPress={() => router.back()}
-                    />
-                  )
-                : undefined,
+              title: "Ny melding",
+              animation: "slide_from_bottom",
+              presentation: "modal",
+            }}
+          />
+          <Stack.Screen
+            name="plans/[id]/index"
+            options={{
+              title: "Plan-detaljer",
+              animation: "slide_from_bottom",
+              presentation: "modal",
             }}
           />
         </Stack>

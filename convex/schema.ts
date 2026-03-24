@@ -48,10 +48,33 @@ export default defineSchema({
     .index("by_date", ["date"])
     .index("by_groupId", ["groupId"]),
 
+  // Unified conversation container for both group chats and direct messages.
+  // Group conversations are created automatically when a group is created.
+  // DM conversations are created on-demand via getOrCreateDM.
+  conversations: defineTable({
+    type: v.union(v.literal("group"), v.literal("dm")),
+    groupId: v.optional(v.id("groups")), // set for type="group"
+    dmKey: v.optional(v.string()),       // set for type="dm": sorted "${userId1}_${userId2}"
+    participantIds: v.optional(v.array(v.id("users"))), // set for type="dm"
+  })
+    .index("by_groupId", ["groupId"])
+    .index("by_dmKey", ["dmKey"]),
+
+  // Join table for DM conversations only.
+  // Group membership is still tracked in groupMembers.
+  conversationMembers: defineTable({
+    conversationId: v.id("conversations"),
+    userId: v.id("users"),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_conversationId", ["conversationId"]),
+
+  // NOTE: If you have existing chat documents with groupId, clear them in the
+  // Convex dashboard before deploying — conversationId is now required.
   chat: defineTable({
     message: v.string(),
     userId: v.id("users"),
-    groupId: v.id("groups"),
+    conversationId: v.id("conversations"),
     reactions: v.optional(
       v.array(
         v.object({
@@ -60,7 +83,7 @@ export default defineSchema({
         }),
       ),
     ),
-  }).index("by_groupId", ["groupId"]),
+  }).index("by_conversationId", ["conversationId"]),
 
   pushTokens: defineTable({
     userId: v.id("users"),
