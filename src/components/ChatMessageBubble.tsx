@@ -4,10 +4,11 @@ import { formatDateAndTime } from "@/lib/utils/date";
 import { useMutation } from "convex/react";
 import { useRef, useState } from "react";
 import {
+  Dimensions,
+  Modal,
   Pressable,
   StyleSheet,
   Text,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
 
@@ -22,6 +23,12 @@ type ChatMessageBubbleProps = {
   currentUserId?: string;
 };
 
+type PickerAnchor = {
+  top: number;
+  left?: number;
+  right?: number;
+};
+
 export function ChatMessageBubble({
   message,
   userName,
@@ -32,7 +39,8 @@ export function ChatMessageBubble({
   const removeReaction = useMutation(api.chat.removeReaction);
   const lastTapTimestampRef = useRef(0);
   const [isUpdatingReaction, setIsUpdatingReaction] = useState(false);
-  const [isReactionPickerVisible, setIsReactionPickerVisible] = useState(false);
+  const [pickerAnchor, setPickerAnchor] = useState<PickerAnchor | null>(null);
+  const bubbleRef = useRef<View>(null);
 
   const reactionCounts = new Map<string, number>();
   for (const reaction of message.reactions ?? []) {
@@ -50,16 +58,9 @@ export function ChatMessageBubble({
       const bIndex = REACTION_OPTIONS.indexOf(
         b as (typeof REACTION_OPTIONS)[number],
       );
-
-      if (aIndex === -1 && bIndex === -1) {
-        return a.localeCompare(b);
-      }
-      if (aIndex === -1) {
-        return 1;
-      }
-      if (bIndex === -1) {
-        return -1;
-      }
+      if (aIndex === -1 && bIndex === -1) return a.localeCompare(b);
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
       return aIndex - bIndex;
     },
   );
@@ -67,28 +68,18 @@ export function ChatMessageBubble({
   const hasCurrentUserReaction = (emoji: string) =>
     currentUserId
       ? (message.reactions ?? []).some(
-          (reaction) =>
-            reaction.userId === currentUserId && reaction.emoji === emoji,
+          (r) => r.userId === currentUserId && r.emoji === emoji,
         )
       : false;
 
   const toggleReaction = async (emoji: string) => {
-    if (!currentUserId || isUpdatingReaction) {
-      return;
-    }
-
+    if (!currentUserId || isUpdatingReaction) return;
     setIsUpdatingReaction(true);
     try {
       if (hasCurrentUserReaction(emoji)) {
-        await removeReaction({
-          chatId: message._id,
-          emoji,
-        });
+        await removeReaction({ chatId: message._id, emoji });
       } else {
-        await addReaction({
-          chatId: message._id,
-          emoji,
-        });
+        await addReaction({ chatId: message._id, emoji });
       }
     } finally {
       setIsUpdatingReaction(false);
@@ -96,11 +87,6 @@ export function ChatMessageBubble({
   };
 
   const handleBubblePress = () => {
-    if (isReactionPickerVisible) {
-      setIsReactionPickerVisible(false);
-      return;
-    }
-
     const now = Date.now();
     if (now - lastTapTimestampRef.current <= DOUBLE_TAP_DELAY_MS) {
       void toggleReaction(THUMB_EMOJI);
@@ -109,41 +95,109 @@ export function ChatMessageBubble({
   };
 
   const handleBubbleLongPress = () => {
-    if (!currentUserId || isUpdatingReaction) {
-      return;
-    }
-    setIsReactionPickerVisible(true);
+    if (!currentUserId || isUpdatingReaction) return;
+    bubbleRef.current?.measureInWindow((x, y, width, height) => {
+      const screenWidth = Dimensions.get("window").width;
+      setPickerAnchor({
+        top: y + height - 48,
+        ...(isCurrentUser ? { right: screenWidth - x - width } : { left: x }),
+      });
+    });
   };
 
-  const selectReaction = async (emoji: string) => {
-    setIsReactionPickerVisible(false);
-    await toggleReaction(emoji);
-  };
+  const closePicker = () => setPickerAnchor(null);
 
   return (
-    <TouchableWithoutFeedback
-      onPress={() => {
-        if (isReactionPickerVisible) {
-          setIsReactionPickerVisible(false);
-        }
-      }}
-      disabled={!isReactionPickerVisible}
+    <View
+      style={[
+        styles.messageRow,
+        isCurrentUser ? styles.messageRowRight : styles.messageRowLeft,
+      ]}
     >
-      <View
-        style={[
-          styles.messageRow,
-          isCurrentUser ? styles.messageRowRight : styles.messageRowLeft,
-        ]}
+      <View style={styles.messageContent}>
+        <Pressable
+          ref={bubbleRef}
+          onPress={handleBubblePress}
+          onLongPress={handleBubbleLongPress}
+          delayLongPress={300}
+          style={({ pressed }) => [
+            styles.bubble,
+            isCurrentUser ? styles.currentUserBubble : styles.otherUserBubble,
+            pressed && styles.bubblePressed,
+          ]}
+        >
+          <Text
+            selectable
+            style={[
+              styles.messageText,
+              isCurrentUser && styles.currentUserMessageText,
+            ]}
+          >
+            {message.message}
+          </Text>
+          <Text
+            style={[
+              styles.messageMeta,
+              isCurrentUser && styles.currentUserMessageMeta,
+            ]}
+          >
+            {userName} -{" "}
+            {formatDateAndTime(
+              new Date(message._creationTime),
+              "no",
+              "short",
+              true,
+            )}
+          </Text>
+        </Pressable>
+
+        {sortedReactionEntries.length > 0 ? (
+          <View
+            style={[
+              styles.reactionsRow,
+              isCurrentUser ? styles.reactionRight : styles.reactionLeft,
+            ]}
+          >
+            {sortedReactionEntries.map(([emoji, count]) => {
+              const reactedByCurrentUser = hasCurrentUserReaction(emoji);
+              return (
+                <Pressable
+                  key={emoji}
+                  style={[
+                    styles.reactionChip,
+                    reactedByCurrentUser && styles.reactionChipActive,
+                  ]}
+                  onPress={() => {
+                    if (reactedByCurrentUser) void toggleReaction(emoji);
+                  }}
+                >
+                  <Text style={styles.reactionEmoji}>{emoji}</Text>
+                  <Text
+                    style={[
+                      styles.reactionCount,
+                      reactedByCurrentUser && styles.reactionCountActive,
+                    ]}
+                  >
+                    {count}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
+      </View>
+
+      <Modal
+        transparent
+        visible={pickerAnchor !== null}
+        animationType="none"
+        onRequestClose={closePicker}
       >
-        <View style={styles.messageContent}>
-          {isReactionPickerVisible ? (
-            <View
-              style={[
-                styles.pickerContainer,
-                isCurrentUser
-                  ? styles.pickerCurrentUserMessage
-                  : styles.pickerOtherUserMessage,
-              ]}
+        <Pressable style={StyleSheet.absoluteFillObject} onPress={closePicker}>
+          {pickerAnchor && (
+            <Pressable
+              style={[styles.picker, pickerAnchor]}
+              onPress={(e) => e.stopPropagation()}
             >
               <View style={styles.pickerRow}>
                 {REACTION_OPTIONS.map((emoji) => (
@@ -154,88 +208,19 @@ export function ChatMessageBubble({
                       pressed && styles.pickerItemPressed,
                     ]}
                     onPress={() => {
-                      void selectReaction(emoji);
+                      void toggleReaction(emoji);
+                      closePicker();
                     }}
                   >
                     <Text style={styles.pickerEmoji}>{emoji}</Text>
                   </Pressable>
                 ))}
               </View>
-            </View>
-          ) : null}
-
-          <Pressable
-            onPress={handleBubblePress}
-            onLongPress={handleBubbleLongPress}
-            delayLongPress={300}
-            style={({ pressed }) => [
-              styles.bubble,
-              isCurrentUser ? styles.currentUserBubble : styles.otherUserBubble,
-              pressed && styles.bubblePressed,
-            ]}
-          >
-            <Text
-              style={[
-                styles.messageText,
-                isCurrentUser && styles.currentUserMessageText,
-              ]}
-            >
-              {message.message}
-            </Text>
-            <Text
-              style={[
-                styles.messageMeta,
-                isCurrentUser && styles.currentUserMessageMeta,
-              ]}
-            >
-              {userName} -{" "}
-              {formatDateAndTime(
-                new Date(message._creationTime),
-                "no",
-                "short",
-                true,
-              )}
-            </Text>
-          </Pressable>
-
-          {sortedReactionEntries.length > 0 ? (
-            <View
-              style={[
-                styles.reactionsRow,
-                isCurrentUser ? styles.reactionRight : styles.reactionLeft,
-              ]}
-            >
-              {sortedReactionEntries.map(([emoji, count]) => {
-                const reactedByCurrentUser = hasCurrentUserReaction(emoji);
-
-                return (
-                  <Pressable
-                    key={emoji}
-                    style={[
-                      styles.reactionChip,
-                      reactedByCurrentUser && styles.reactionChipActive,
-                    ]}
-                    onPress={() => {
-                      reactedByCurrentUser && void toggleReaction(emoji);
-                    }}
-                  >
-                    <Text style={styles.reactionEmoji}>{emoji}</Text>
-                    <Text
-                      style={[
-                        styles.reactionCount,
-                        reactedByCurrentUser && styles.reactionCountActive,
-                      ]}
-                    >
-                      {count}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          ) : null}
-        </View>
-      </View>
-    </TouchableWithoutFeedback>
+            </Pressable>
+          )}
+        </Pressable>
+      </Modal>
+    </View>
   );
 }
 
@@ -326,10 +311,8 @@ const styles = StyleSheet.create({
   reactionCountActive: {
     color: "#FFFFFF",
   },
-  pickerContainer: {
+  picker: {
     position: "absolute",
-    top: -30,
-    zIndex: 10,
     borderRadius: 999,
     borderWidth: 1,
     borderColor: "#E5E7EB",
@@ -341,12 +324,6 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
     elevation: 6,
-  },
-  pickerCurrentUserMessage: {
-    right: 80,
-  },
-  pickerOtherUserMessage: {
-    left: 80,
   },
   pickerRow: {
     flexDirection: "row",
@@ -363,7 +340,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#F9FAFB",
     alignItems: "center",
     justifyContent: "center",
-    gap: 1,
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
