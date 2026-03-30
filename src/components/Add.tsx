@@ -15,7 +15,7 @@ export function AddComponent({ path }: { path: string }) {
     >
       <Link href={path as any} asChild>
         <Pressable style={styles.fabButton}>
-          <PlusIcon color="#ffffff" />
+          <PlusIcon color="#000000" />
         </Pressable>
       </Link>
     </View>
@@ -29,8 +29,16 @@ const styles = StyleSheet.create({
     left: 16,
   },
   fabButton: {
-    backgroundColor: "grey",
-    padding: 12,
-    borderRadius: 28,
+    backgroundColor: "#D4D0C8",
+    padding: 10,
+    borderRadius: 0,
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderBottomWidth: 2,
+    borderRightWidth: 2,
+    borderTopColor: "#FFFFFF",
+    borderLeftColor: "#FFFFFF",
+    borderBottomColor: "#808080",
+    borderRightColor: "#808080",
   },
 });

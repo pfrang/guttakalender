@@ -54,7 +54,7 @@ export function PlansList({ plans, fromRoot }: Props) {
               <View style={styles.accentBar} />
               <View style={styles.cardInner}>
                 <View style={styles.locationRow}>
-                  <Ionicons name="location-outline" size={18} color="#0F172A" />
+                  <Ionicons name="location-outline" size={14} color="#000080" />
                   <Text style={styles.location} numberOfLines={2}>
                     {plan.location}
                   </Text>
@@ -63,8 +63,8 @@ export function PlansList({ plans, fromRoot }: Props) {
                   <View style={styles.dateChip}>
                     <Ionicons
                       name="calendar-outline"
-                      size={14}
-                      color="#5B6B7A"
+                      size={12}
+                      color="#000080"
                     />
                     <Text style={styles.dateText}>
                       {formatDateAndTime(plan.date, "no", "medium", true)}
@@ -76,15 +76,15 @@ export function PlansList({ plans, fromRoot }: Props) {
                     <View style={styles.attendingBadge}>
                       <Ionicons
                         name="checkmark-circle"
-                        size={14}
-                        color="#0D9488"
+                        size={12}
+                        color="#006600"
                       />
                       <Text style={styles.attendingText}>Du er meldt på</Text>
                     </View>
                   ) : (
                     <Text style={styles.tapHint}>Trykk for detaljer</Text>
                   )}
-                  <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+                  <Ionicons name="chevron-forward" size={12} color="#808080" />
                 </View>
               </View>
             </View>
@@ -99,100 +99,105 @@ export default PlansList;
 
 const styles = StyleSheet.create({
   list: {
-    gap: 16,
+    gap: 8,
   },
   cardWrapper: {
-    borderRadius: 18,
+    borderRadius: 0,
   },
   cardPressed: {
-    opacity: 0.92,
-    transform: [{ scale: 0.99 }],
+    opacity: 0.9,
   },
   card: {
     flexDirection: "row",
-    borderRadius: 18,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#E8ECF1",
+    borderRadius: 0,
+    backgroundColor: "#D4D0C8",
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderBottomWidth: 2,
+    borderRightWidth: 2,
+    borderTopColor: "#FFFFFF",
+    borderLeftColor: "#FFFFFF",
+    borderBottomColor: "#808080",
+    borderRightColor: "#808080",
     overflow: "hidden",
-    shadowColor: "#0F172A",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 2,
   },
   cardAttending: {
-    borderColor: "#CCFBF1",
-    backgroundColor: "#F0FDFA",
+    backgroundColor: "#C8D8C8",
   },
   accentBar: {
     width: 4,
-    backgroundColor: "#25292e",
-    borderTopLeftRadius: 18,
-    borderBottomLeftRadius: 18,
+    backgroundColor: "#000080",
   },
   cardInner: {
     flex: 1,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    paddingLeft: 14,
-    gap: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    paddingLeft: 10,
+    gap: 6,
   },
   locationRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 6,
   },
   location: {
     flex: 1,
-    fontSize: 17,
+    fontSize: 13,
     fontWeight: "700",
-    color: "#0F172A",
-    letterSpacing: -0.2,
-    lineHeight: 22,
+    color: "#000000",
+    letterSpacing: 0,
+    lineHeight: 18,
   },
   metaRow: {
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
-    gap: 8,
+    gap: 6,
   },
   dateChip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    backgroundColor: "#F1F5F9",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 10,
+    gap: 4,
+    backgroundColor: "#C0C0C0",
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 0,
+    borderTopWidth: 1,
+    borderLeftWidth: 1,
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderTopColor: "#808080",
+    borderLeftColor: "#808080",
+    borderBottomColor: "#FFFFFF",
+    borderRightColor: "#FFFFFF",
   },
   dateText: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#475569",
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#000000",
   },
   footer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginTop: 4,
-    paddingTop: 10,
+    paddingTop: 6,
     borderTopWidth: 1,
-    borderTopColor: "#F1F5F9",
+    borderTopColor: "#808080",
   },
   attendingBadge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: 4,
   },
   attendingText: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#0D9488",
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#006600",
   },
   tapHint: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: "#94A3B8",
+    fontSize: 11,
+    fontWeight: "400",
+    color: "#808080",
   },
 });

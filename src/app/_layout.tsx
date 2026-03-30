@@ -92,7 +92,7 @@ function RootLayoutInner() {
 
   return (
     <KeyboardProvider>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <Unauthenticated>
         <KeyboardAvoidingView
           style={{

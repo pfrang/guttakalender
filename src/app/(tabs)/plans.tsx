@@ -30,13 +30,13 @@ export default function Plans() {
     <SafeAreaView style={styles.container} edges={["top"]}>
       {hasPlans ? (
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+          <Text style={{ fontSize: 13, fontWeight: "700", color: "#000000" }}>
             Dine kommende planer
           </Text>
           <PlansList plans={plansAfterToday} fromRoot />
         </ScrollView>
       ) : (
-        <Text>Ingen planer lagt til enda</Text>
+        <Text style={{ fontSize: 13, color: "#808080" }}>Ingen planer lagt til enda</Text>
       )}
     </SafeAreaView>
   );
@@ -45,10 +45,11 @@ export default function Plans() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: 8,
+    backgroundColor: "#C0C0C0",
   },
   content: {
-    gap: 12,
+    gap: 8,
     paddingBottom: 96,
   },
 });

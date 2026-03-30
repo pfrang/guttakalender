@@ -32,7 +32,7 @@ export function Input({
       <TextInput
         ref={ref}
         {...props}
-        placeholderTextColor="#9CA3AF"
+        placeholderTextColor="#808080"
         autoCapitalize={props.autoCapitalize ?? "none"}
         style={[
           styles.input,
@@ -59,38 +59,44 @@ const styles = StyleSheet.create({
   wrapper: {
     width: "100%",
     alignSelf: "center",
-    gap: 8,
+    gap: 6,
   },
   input: {
     width: "100%",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#D1D5DB",
+    borderRadius: 0,
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderBottomWidth: 2,
+    borderRightWidth: 2,
+    borderTopColor: "#808080",
+    borderLeftColor: "#808080",
+    borderBottomColor: "#FFFFFF",
+    borderRightColor: "#FFFFFF",
     backgroundColor: "#FFFFFF",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: "#111827",
-    fontSize: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    color: "#000000",
+    fontSize: 13,
+    fontWeight: "400",
   },
   inputFocused: {
-    borderColor: "#4F46E5",
-    shadowColor: "#4F46E5",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 2,
+    borderTopColor: "#000080",
+    borderLeftColor: "#000080",
+    borderBottomColor: "#C0C0C0",
+    borderRightColor: "#C0C0C0",
   },
   inputError: {
-    borderColor: "#EF4444",
+    borderTopColor: "#CC0000",
+    borderLeftColor: "#CC0000",
   },
   label: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#1F2937",
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#000000",
   },
   errorText: {
-    color: "#DC2626",
-    fontSize: 12,
-    fontWeight: "500",
+    color: "#CC0000",
+    fontSize: 11,
+    fontWeight: "700",
   },
 });

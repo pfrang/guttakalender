@@ -25,7 +25,7 @@ export default function Index() {
                 <Button title="Bli med i gruppe" />
               </Link>
             </View>
-            <Text>Dine grupper</Text>
+            <Text style={{ fontSize: 13, fontWeight: "700", color: "#FFFFFF", backgroundColor: "#000080", paddingHorizontal: 8, paddingVertical: 4 }}>Dine grupper</Text>
           </View>
         }
         renderItem={({ item }) => (
@@ -52,7 +52,7 @@ export default function Index() {
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
         ListHeaderComponent={
           <View style={styles.header}>
-            <Text>Dine samtaler</Text>
+            <Text style={{ fontSize: 13, fontWeight: "700", color: "#FFFFFF", backgroundColor: "#000080", paddingHorizontal: 8, paddingVertical: 4 }}>Dine samtaler</Text>
           </View>
         }
         keyExtractor={(item) => item._id}
@@ -78,22 +78,17 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: 8,
+    backgroundColor: "#C0C0C0",
   },
   header: {
-    gap: 16,
-    marginBottom: 16,
+    gap: 6,
+    marginBottom: 8,
   },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  listContent: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
+  listContent: {},
 });

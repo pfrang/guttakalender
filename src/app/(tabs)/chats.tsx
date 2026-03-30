@@ -107,8 +107,8 @@ function ChatRow({
             </Text>
             <Ionicons
               name={isDm ? "person" : "people-sharp"}
-              size={11}
-              color="#9CA3AF"
+              size={10}
+              color="#808080"
               style={{ marginLeft: 4 }}
             />
           </View>
@@ -148,12 +148,12 @@ function AndroidAddSheet({
         <View style={sheet.panel}>
           <View style={sheet.handle} />
           <Pressable style={sheet.option} onPress={onGroup}>
-            <Ionicons name="people-outline" size={22} color="#111827" />
+            <Ionicons name="people-outline" size={16} color="#000000" />
             <Text style={sheet.optionText}>Ny gruppe</Text>
           </Pressable>
           <View style={sheet.divider} />
           <Pressable style={sheet.option} onPress={onDM}>
-            <Ionicons name="chatbubble-outline" size={22} color="#111827" />
+            <Ionicons name="chatbubble-outline" size={16} color="#000000" />
             <Text style={sheet.optionText}>Ny melding</Text>
           </Pressable>
           <Pressable style={sheet.cancelBtn} onPress={onClose}>
@@ -277,7 +277,7 @@ function AddButton({ onPress }: { onPress: () => void }) {
       style={({ pressed }) => [styles.addBtn, pressed && styles.addBtnPressed]}
       hitSlop={8}
     >
-      <Ionicons name="add" size={22} color="#007AFF" />
+      <Ionicons name="add" size={16} color="#000000" />
     </Pressable>
   );
 }
@@ -286,43 +286,52 @@ function AddButton({ onPress }: { onPress: () => void }) {
 // Styles
 // ---------------------------------------------------------------------------
 
-const AVATAR_SIZE = 48;
+const AVATAR_SIZE = 44;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#C0C0C0",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#E5E7EB",
+    paddingHorizontal: 8,
+    paddingTop: 6,
+    paddingBottom: 6,
+    backgroundColor: "#000080",
   },
   title: {
-    fontSize: 24,
+    fontSize: 13,
     fontWeight: "700",
-    color: "#111827",
+    color: "#FFFFFF",
+    letterSpacing: 0.2,
   },
   addBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "rgba(0,122,255,0.10)",
+    width: 22,
+    height: 22,
+    borderRadius: 0,
+    backgroundColor: "#D4D0C8",
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 0.5,
-    borderColor: "rgba(0,122,255,0.20)",
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderBottomWidth: 2,
+    borderRightWidth: 2,
+    borderTopColor: "#FFFFFF",
+    borderLeftColor: "#FFFFFF",
+    borderBottomColor: "#808080",
+    borderRightColor: "#808080",
   },
   addBtnPressed: {
-    backgroundColor: "rgba(0,122,255,0.18)",
+    borderTopColor: "#808080",
+    borderLeftColor: "#808080",
+    borderBottomColor: "#FFFFFF",
+    borderRightColor: "#FFFFFF",
   },
   listContent: {
-    paddingTop: 4,
+    paddingTop: 2,
   },
   emptyContainer: {
     flex: 1,
@@ -330,30 +339,41 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
-    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    gap: 8,
+    backgroundColor: "#C0C0C0",
+    borderBottomWidth: 1,
+    borderBottomColor: "#808080",
   },
   rowPressed: {
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#000080",
   },
   avatar: {
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
+    borderRadius: 0,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
+    backgroundColor: "#000080",
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderBottomWidth: 2,
+    borderRightWidth: 2,
+    borderTopColor: "#FFFFFF",
+    borderLeftColor: "#FFFFFF",
+    borderBottomColor: "#808080",
+    borderRightColor: "#808080",
   },
   avatarText: {
     color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 13,
+    fontWeight: "700",
   },
   rowContent: {
     flex: 1,
-    gap: 3,
+    gap: 2,
   },
   rowHeader: {
     flexDirection: "row",
@@ -367,25 +387,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   convName: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#111827",
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#000000",
     flexShrink: 1,
   },
   timestamp: {
-    fontSize: 12,
-    color: "#9CA3AF",
+    fontSize: 11,
+    color: "#808080",
     flexShrink: 0,
+    fontWeight: "400",
   },
   preview: {
-    fontSize: 13,
-    color: "#6B7280",
-    lineHeight: 18,
+    fontSize: 12,
+    color: "#404040",
+    lineHeight: 16,
   },
   separator: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: "#E5E7EB",
-    marginLeft: 16 + AVATAR_SIZE + 12,
+    height: 1,
+    backgroundColor: "#808080",
   },
   centered: {
     flex: 1,
@@ -394,60 +414,76 @@ const styles = StyleSheet.create({
     padding: 32,
   },
   emptyText: {
-    fontSize: 14,
-    color: "#6B7280",
+    fontSize: 13,
+    color: "#808080",
     textAlign: "center",
-    lineHeight: 22,
+    lineHeight: 20,
   },
 });
 
 const sheet = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "flex-end",
   },
   panel: {
-    backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: "#D4D0C8",
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
     paddingBottom: 36,
-    paddingTop: 12,
-    paddingHorizontal: 16,
+    paddingTop: 0,
+    paddingHorizontal: 0,
+    borderTopWidth: 2,
+    borderTopColor: "#FFFFFF",
   },
   handle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#D1D5DB",
+    width: "100%",
+    height: 24,
+    backgroundColor: "#000080",
     alignSelf: "center",
-    marginBottom: 16,
+    marginBottom: 12,
+    justifyContent: "center",
+    paddingHorizontal: 8,
   },
   option: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
-    paddingVertical: 16,
+    gap: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
   },
   optionText: {
-    fontSize: 16,
-    color: "#111827",
-    fontWeight: "500",
+    fontSize: 13,
+    color: "#000000",
+    fontWeight: "400",
   },
   divider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: "#E5E7EB",
+    height: 1,
+    backgroundColor: "#808080",
+    marginHorizontal: 16,
   },
   cancelBtn: {
     marginTop: 12,
-    paddingVertical: 14,
+    marginHorizontal: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
     alignItems: "center",
-    backgroundColor: "#F3F4F6",
-    borderRadius: 12,
+    backgroundColor: "#D4D0C8",
+    borderRadius: 0,
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderBottomWidth: 2,
+    borderRightWidth: 2,
+    borderTopColor: "#FFFFFF",
+    borderLeftColor: "#FFFFFF",
+    borderBottomColor: "#808080",
+    borderRightColor: "#808080",
+    alignSelf: "flex-start",
   },
   cancelText: {
-    fontSize: 16,
-    color: "#6B7280",
-    fontWeight: "500",
+    fontSize: 13,
+    color: "#000000",
+    fontWeight: "700",
   },
 });

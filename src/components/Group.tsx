@@ -8,15 +8,23 @@ export function Group({ groupId }: { groupId: Id<"groups"> }) {
 
   return (
     <View style={styles.container}>
-      <Text>{groupData?.name}</Text>
+      <Text style={{ fontSize: 13, fontWeight: "700", color: "#000000" }}>{groupData?.name}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: "#FFFFFF",
+    padding: 10,
+    borderRadius: 0,
+    backgroundColor: "#D4D0C8",
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderBottomWidth: 2,
+    borderRightWidth: 2,
+    borderTopColor: "#FFFFFF",
+    borderLeftColor: "#FFFFFF",
+    borderBottomColor: "#808080",
+    borderRightColor: "#808080",
   },
 });
